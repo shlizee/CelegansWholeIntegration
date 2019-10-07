@@ -12,11 +12,12 @@ We test the model by comparing outcomes of body dynamics with in vivo experiment
 Furthermore, we perform additional ablations to elucidate novel details on these experiments.
 
 # _CelegansWholeIntegration_ blog
-
 Since the project facilitates exploration of various stimualtions and behavioral scenarios we have started a blog where we will describe the scenarios that we have studied. Our plan is to explore additional scenarios that will enhance the model and potentially contribute to better understanding of mappping neural dynamics to body movements. Through the blog we also aim to interact with the community and get it involved in identifying novel scenarios.
 
 # _CelegansWholeIntegration_ code
-We are working on the release of our code that will be entirely **open source**. The code repository will include the connectomics and simulation of neural dynamics, jointly called the nervous system module. In addition to the nervous system module we are releasing the body dynamics module. Both modules interface with each other and allow to simulate them both and close the loop between neural dynamics and body. We will also provide an API for using various components in the modules and developing your own simulations.
+We are working on the release of our code that will be entirely **open source**. The code repository will include the connectomics and simulation of neural dynamics, jointly called the nervous system module. In addition to the nervous system module we are releasing the body dynamics module. Both modules interface with each other and allow to simulate them both and close the loop between neural dynamics and body. We will also provide an API for using various components in the modules and developing your own simulations.  
+
+Go to [_CelegansWholeIntegration_ Github Project](https://github.com/shlizee/CelegansWholeIntegration) 
 
 # _CelegansWholeIntegration_ manuscript
 Please cite the _CelegansWholeIntegration_ preprint if you use this code:
