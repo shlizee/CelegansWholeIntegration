@@ -21,13 +21,13 @@ We are working on the release of our code that will be entirely **open source**.
 # _CelegansWholeIntegration_ manuscript
 Please cite the _CelegansWholeIntegration_ preprint if you use this code:
 
-`@article{kim2019whole,\n
-  title={Whole integration of neural connectomics, dynamics and bio-mechanics for identification of behavioral sensorimotor pathways in Caenorhabditis elegans},\n
-  author={Kim, Jimin and Santos, Julia A and Alkema, Mark J and Shlizerman, Eli},\n
-  journal={bioRxiv},\n
-  pages={724328},\n
-  year={2019},\n
-  publisher={Cold Spring Harbor Laboratory}n\
+`@article{kim2019whole,  
+  title={Whole integration of neural connectomics, dynamics and bio-mechanics for identification of behavioral sensorimotor pathways in Caenorhabditis elegans},  
+  author={Kim, Jimin and Santos, Julia A and Alkema, Mark J and Shlizerman, Eli},  
+  journal={bioRxiv},  
+  pages={724328},  
+  year={2019},  
+  publisher={Cold Spring Harbor Laboratory}  
 }`
 
 
