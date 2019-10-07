@@ -23,8 +23,9 @@ Please cite the _CelegansWholeIntegration_ preprint if you use this code:
 
 ```
 @article{kim2019whole,  
-  title={Whole integration of neural connectomics, dynamics and bio-mechanics for  
-         identification of behavioral sensorimotor pathways in Caenorhabditis elegans},  
+  title={Whole integration of neural connectomics, dynamics and bio-mechanics   
+         for identification of behavioral sensorimotor pathways in  
+         Caenorhabditis elegans},  
   author={Kim, Jimin and Santos, Julia A and Alkema, Mark J and Shlizerman, Eli},  
   journal={bioRxiv},  
   pages={724328},  
