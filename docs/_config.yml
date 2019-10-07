@@ -1,6 +1,6 @@
 # basic options
 title: C.elegans Whole Integration
-description: 
+description: Blog and code repository for the whole integration of neural connectomics, dynamics and bio-mechanics.
 
 # build settings
 markdown: kramdown
