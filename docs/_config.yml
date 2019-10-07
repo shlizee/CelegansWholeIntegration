@@ -1,6 +1,9 @@
 # basic options
 title: C.elegans Whole Integration
 description: Blog and code repository for the whole integration of neural connectomics, dynamics and bio-mechanics.
+email: shlizee@uw.edu
+twitter_username: shlizee
+github_username: shlizee
 
 # build settings
 markdown: kramdown
