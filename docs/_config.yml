@@ -5,6 +5,8 @@ email: shlizee@uw.edu
 twitter_username: shlizee
 github_username: shlizee
 
+show_excerpts: true
+
 # build settings
 markdown: kramdown
 theme: minima
