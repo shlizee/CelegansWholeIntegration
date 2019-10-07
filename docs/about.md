@@ -19,3 +19,16 @@ Since the project facilitates exploration of various stimualtions and behavioral
 We are working on the release of our code that will be entirely **open source**. The code repository will include the connectomics and simulation of neural dynamics, jointly called the nervous system module. In addition to the nervous system module we are releasing the body dynamics module. Both modules interface with each other and allow to simulate them both and close the loop between neural dynamics and body. We will also provide an API for using various components in the modules and developing your own simulations.
 
 # _CelegansWholeIntegration_ manuscript
+Please cite the _CelegansWholeIntegration_ preprint if you use this code:
+
+'@article{kim2019whole,
+  title={Whole integration of neural connectomics, dynamics and bio-mechanics for identification of behavioral sensorimotor pathways in Caenorhabditis elegans},
+  author={Kim, Jimin and Santos, Julia A and Alkema, Mark J and Shlizerman, Eli},
+  journal={bioRxiv},
+  pages={724328},
+  year={2019},
+  publisher={Cold Spring Harbor Laboratory}
+}'
+
+
+
