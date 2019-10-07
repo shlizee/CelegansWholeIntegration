@@ -1,0 +1,7 @@
+# basic options
+title: C.elegans Whole Integration
+description: 
+
+# build settings
+markdown: kramdown
+theme: minima
