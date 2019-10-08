@@ -1,37 +1,11 @@
-## Welcome to GitHub Pages
+# Welcome to _CelegansWholeIntegration_ Repository
 
-You can use the [editor on GitHub](https://github.com/shlizee/CelegansWholeIntegration/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+_CelegansWholeIntegration_ is a whole nervous system and body model for **C. elegans**. The model simulates how connectome + neural interactions + body interact together to generate locomotion. 
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+We are working on releasing our code which will be entirely open source. The code repository will include the connectomics and simulation of neural dynamics, jointly called the nervous system module. In addition to the nervous system module we are releasing the body dynamics module. Both modules interface with each other and allow mutual simulation to close the loop between neural dynamics and body. We will also provide an API for using independent components in the modules.
 
-### Markdown
+In the meantime please see our blog for locomotion scenarios+ videos produced with _CelegansWholeIntegration_:
+[_CelegansWholeIntegration_ blog](/CelegansWholeIntegration/docs/)
+Also contact us with additional scenarios to explore, we would love to get suggestions!
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
 
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/shlizee/CelegansWholeIntegration/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
