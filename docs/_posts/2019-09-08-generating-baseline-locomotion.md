@@ -17,7 +17,7 @@ We use the generated **baseline forward and backward** movements to validate our
 
 
 | Forward | Backward |
-|:-------:|:--------:|  
+|:-----------------------:|:------------------------:|
 
 
 When we simulate the integration, we observe that generated movements can be almost indistinguishable from locomotion characteristics of freely moving animals (see above videos forward(left) and backward(right) ). By measuring the error between the imposed traveling wave and the actual body curvature we observe that the nervous system includes preference for particular periods of the force, with optimal frequency being approximately 2 and 4s. These results indicate that the response of the nervous system is shaping the external force in a nontrivial and nonlinear manner. 
