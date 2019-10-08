@@ -7,7 +7,7 @@ title: Generating baseline locomotion - backward and forward
 
 First locomotion movements that we generate with **_CelegansWholeIntegration_** are **forward and backward** movements. These movements are similar to translating sinusoidal. This video recorded in MIT experimental lab demonstrates the body postures involved (while there is variation in postures these are pretty typical).
 
-[https://www.youtube.com/watch?v=olrkWpCqVCE](https://www.youtube.com/watch?v=olrkWpCqVCE)
+<iframe width="560" height="315" src="https://www.youtube.com/embed/olrkWpCqVCE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 In this video, C. elegans initially moves forward and then when receives mechanical stimulus moves backward. Such response is called the tap response.  
 
