@@ -4,12 +4,18 @@ type: homepage
 ---
 
 
+<div>
   {% for post in site.posts %}
-      [{{ post.title }}]({{ post.url }})
+    <div>
+      <a href="{{ post.url }}">{{ post.title }}</a>
       {{ post.excerpt }}
-    {% if post.excerpt != post.content %}
-            [Read More...]({{site.baseurl}}{{post.url}})
-    {% endif %}
-    
-  {% endfor %}
+      {% if post.excerpt != post.content %}
+        <a href="{{ site.baseurl }}{{ post.url }}">Read More ...</a>
+      {% endif %}
+
+    </div>
+{% endfor %}
+</div>
+
+
 
