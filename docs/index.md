@@ -5,7 +5,7 @@ type: homepage
 
 
 <div>
-  {% for post in site.posts %}
+{% for post in site.posts %}
     <div>
       <a href="{{ post.url }}">{{ post.title }}</a>
       {{ post.excerpt }}
