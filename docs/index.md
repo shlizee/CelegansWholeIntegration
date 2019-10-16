@@ -12,7 +12,6 @@ type: homepage
       {% if post.excerpt != post.content %}
         <a href="{{ site.baseurl }}{{ post.url }}">Read More ...</a>
       {% endif %}
-
     </div>
 {% endfor %}
 </div>
