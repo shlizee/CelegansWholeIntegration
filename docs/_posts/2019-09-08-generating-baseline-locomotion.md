@@ -11,7 +11,7 @@ First movements that we generate with **_CelegansWholeIntegration_** are **basel
 
 In this video, C. elegans initially moves forward and then when receives a mechanical stimulus (touch in the anterior part) switches direction and moves backward. While there is variation in postures these are pretty typical. Such a response is called the tap withdrawl.   
 
-To generate the **baseline forward and backward** movements we design a **force wave travelling along the body** with variable frequency to infer neural dynamics associated with it. These neural dynamics are then forward integrated by the nervous system to generate the body postures. We are able to generate the following locomotion patterns (forward-left; backward-right): 
+To generate the **baseline forward and backward** movements we design a **force wave travelling along the body** with variable frequency to infer neural dynamics associated with it. <!--more--> These neural dynamics are then forward integrated by the nervous system to generate the body postures. We are able to generate the following locomotion patterns (forward-left; backward-right): 
 
 <iframe width="336" height="188" src="https://www.youtube.com/embed/UPrO7GtezbM" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   <iframe width="336" height="188" src="https://www.youtube.com/embed/cilgztffR7w" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
   
