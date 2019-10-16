@@ -3,17 +3,14 @@ layout: page
 type: homepage
 ---
 
-
-{% for post in site.posts %}
+<ul>
+  {% for post in site.posts %}
     <li>
-      <a href="{{ post.url }}">{{ post.title }}</a>
-      {{ post.excerpt }}
-      
+      <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
+      <p>{{ post.excerpt }}</p>
       {% if post.excerpt != post.content %}
-        <a href="{{ site.baseurl }}{{ post.url }}">Read More ...</a>
+        <h3><a href="{{ site.baseurl }}{{ post.url }}">Read More ...</a></h3>
       {% endif %}
     </li>
-{% endfor %}
-
-
-
+  {% endfor %}
+</ul>
