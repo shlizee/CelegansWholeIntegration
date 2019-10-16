@@ -5,13 +5,14 @@ type: homepage
 
 
 {% for post in site.posts %}
-    <div>
+    <li>
       <a href="{{ post.url }}">{{ post.title }}</a>
       {{ post.excerpt }}
+      
       {% if post.excerpt != post.content %}
         <a href="{{ site.baseurl }}{{ post.url }}">Read More ...</a>
       {% endif %}
-    </div>
+    </li>
 {% endfor %}
 
 
