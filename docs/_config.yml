@@ -10,3 +10,8 @@ show_excerpts: true
 # build settings
 markdown: kramdown
 theme: minima
+
+
+{% if post.excerpt != post.content %}
+    <a href="{{ site.baseurl }}{{ post.url }}">Read more</a>
+{% endif %}
