@@ -4,7 +4,6 @@ type: homepage
 ---
 
 
-<div>
 {% for post in site.posts %}
     <div>
       <a href="{{ post.url }}">{{ post.title }}</a>
@@ -14,7 +13,6 @@ type: homepage
       {% endif %}
     </div>
 {% endfor %}
-</div>
 
 
 
