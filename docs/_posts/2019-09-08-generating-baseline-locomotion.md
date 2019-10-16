@@ -1,7 +1,7 @@
 ---
 layout: post
 excerpt_separator: <!--more-->
-title: Generating baseline locomotion - backward and forward
+title: Generating baseline locomotion - forward and backward
 ---
 
 
