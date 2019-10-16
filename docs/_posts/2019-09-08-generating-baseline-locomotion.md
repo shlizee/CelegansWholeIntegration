@@ -11,7 +11,9 @@ First movements that we generate with **_CelegansWholeIntegration_** are **basel
 
 In this video, C. elegans initially moves forward and then when receives a mechanical stimulus (touch in the anterior part) switches direction and moves backward. While there is variation in postures these are pretty typical. Such a response is called the tap withdrawl.   
 
-To generate **baseline forward and backward** movements with **_CelegansWholeIntegration_** we design a **force wave travelling along the body** with variable frequency to infer neural dynamics associated with it. <!--more--> These neural dynamics are then forward integrated by the nervous system to generate body postures. We are able to generate the following locomotion patterns (forward-left; backward-right): 
+To generate **baseline forward and backward** movements with **_CelegansWholeIntegration_** we design a **force wave travelling along the body** with variable frequency to infer neural dynamics associated with it. <!--more--> These neural dynamics are then forward integrated by the nervous system to generate body postures. We are able to generate the following locomotion patterns: 
+
+#### External Force Locomotion (forward(left) and backward(right)):  
 
 <iframe width="336" height="188" src="https://www.youtube.com/embed/UPrO7GtezbM" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   <iframe width="336" height="188" src="https://www.youtube.com/embed/cilgztffR7w" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
   
@@ -22,11 +24,11 @@ We next apply neural stimuli to examine how they generate forward and backward b
 
 Experiments indicate that proprioception within the motor neurons circuit, can facilitate locomotion and is an alternative to stimulation of command interneurons. To emulate proprioceptive feedback, we close the loop between neural stimulation and external body forces by inverse integrating the force that acts on the body to neural stimulation after a time delay. We test feedback effects by initiating locomotion with external stimulation, either neural current injection or spatial wave force. Once the feedback starts to entrain the movement we gradually turn external stimulation off. We find that in both initiation procedures feedback entrains the body into sustainable coherent movements in forward and backward directions such that the body moves solely due to feedback.
 
-## Neural Initiation + Feedback (forward(left) and backward(right)):  
+#### Neural Initiation + Feedback (forward(left) and backward(right)):  
 
 <iframe width="336" height="188" src="https://www.youtube.com/embed/NpJIGTLWYME" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   <iframe width="336" height="188" src="https://www.youtube.com/embed/1-gq5P4zugQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
 
-## External Force Initiation + Feedback (forward(left) and backward(right)):  
+#### External Force Initiation + Feedback (forward(left) and backward(right)):  
 
 <iframe width="336" height="188" src="https://www.youtube.com/embed/S7RZdL-byV0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   <iframe width="336" height="188" src="https://www.youtube.com/embed/XaUzP8w0oQY" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
