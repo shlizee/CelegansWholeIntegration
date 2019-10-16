@@ -6,11 +6,11 @@ type: homepage
 <ul>
   {% for post in site.posts %}
     <li>
-      <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
+      <h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
       <p>{{ post.excerpt }}</p>
-      {% if post.excerpt != post.content %}
-        <h3><a href="{{ site.baseurl }}{{ post.url }}">Read More ...</a></h3>
-      {% endif %}
+        {% if post.excerpt != post.content %}
+          <h4><a href="{{ site.baseurl }}{{ post.url }}">Read More ...</a></h4>
+        {% endif %}
     </li>
   {% endfor %}
 </ul>
