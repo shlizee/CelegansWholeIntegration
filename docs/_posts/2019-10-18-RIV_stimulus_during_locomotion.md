@@ -11,4 +11,8 @@ RIV motorneurons synapse onto ventral neck muscles and have been associated with
 <iframe width="560" height="315" src="https://www.youtube.com/embed/hJfpxhMVUgc" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 <!--more-->
-As can be seen in the video, each RIV stimulus causes sharp ventral bend of the head leading to a rotation of forward locomotion course by approximately 90 degrees while sustaining locomotion in the forward direction. Neural activity indicates that the turn corresponds to a bias added to the voltage activity of oscillating motor neurons.
+As can be seen in the video, each RIV stimulus causes sharp ventral bend of the head leading to a rotation of forward locomotion course by approximately 90 degrees while sustaining locomotion in the forward direction. 
+
+![RIV Response](/CelegansWholeIntegration/media/RIV.png)
+
+Neural activity indicates that the turn corresponds to a bias added to the voltage activity of oscillating motor neurons.
