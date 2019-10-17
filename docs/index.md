@@ -14,3 +14,6 @@ type: homepage
     </li>
   {% endfor %}
 </ul>
+
+This blog is part of [_CelegansWholeIntegration_ repository](https://github.com/shlizee/CelegansWholeIntegration). We are preparing to release the code and will notify about the release in this blog.
+
