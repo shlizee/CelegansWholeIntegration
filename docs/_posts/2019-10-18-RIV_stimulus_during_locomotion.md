@@ -1,7 +1,7 @@
 ---
 layout: post
 excerpt_separator: <!--more-->
-title: Worm in a box? Triggering sharp turns with RIV pulses
+title: A worm in a box? Triggering sharp turns with RIV pulses
 ---
 
 #### Sharp Ventral Turns: forward locomotion is interrupted by RIV stimulus
