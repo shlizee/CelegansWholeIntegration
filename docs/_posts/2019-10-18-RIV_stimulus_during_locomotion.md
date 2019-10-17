@@ -27,7 +27,7 @@ Inspection of how rotation is exhibited indicates that there are two posture sta
 
 Neural activity in the case of SMDV ablation is similar to neural activity during forward movement. 
 
-![SMDVAblated RIVResponse](/CelegansWholeIntegration/media/RIV_SMDVAbl.png)
+![SMDVAblated RIVResponse](/CelegansWholeIntegration/media/RIVSMDVAbl.png)
 
 Indeed we see that SMDV ablation causes the worm to ingore RIV pulses. **It effectively caused the worm go get out of the box!** Overall these results suggest that both SMDV and RIV neurons are required to facilitate a sharp turn.
 
