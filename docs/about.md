@@ -21,6 +21,7 @@ Go to [_CelegansWholeIntegration_ Github Project](https://github.com/shlizee/Cel
 
 # _CelegansWholeIntegration_ manuscript
 Please cite the _CelegansWholeIntegration_ preprint if you use this code:
+[BiorXiv Preprint](https://www.biorxiv.org/content/10.1101/724328v1)
 
 ```
 @article{kim2019whole,  
