@@ -8,7 +8,7 @@ Once we have generated **baseline forward and backward** locomotion movement wit
 
 #### Avoidance: forward locomotion is interrupted by ALM+AVM stimulus
 
-When ALM+AVM are stimulated in-vivo during forward locomotion, _C. elegans_ reacts to the change by stopping and reversing. In the video below we *initiate forward locomotion* and *after 6 seconds apply ALM+AVM neural stimulation for 2 seconds*. 
+When ALM+AVM are stimulated in-vivo during forward locomotion, _C. elegans_ reacts to the change by stopping and reversing. In the video below we **initiate forward locomotion** and **after 6 seconds apply ALM+AVM neural stimulation for 2 seconds**. 
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/klOJb0DDGGU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 <!--more-->
