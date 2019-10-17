@@ -15,5 +15,5 @@ type: homepage
   {% endfor %}
 </ul>
 
-This blog is part of [_CelegansWholeIntegration_ repository](https://github.com/shlizee/CelegansWholeIntegration). We are preparing to release the code and will notify about the release in this blog.
+This blog is part of [_CelegansWholeIntegration_ repository](https://github.com/shlizee/CelegansWholeIntegration). We are preparing to release the code and will notify about the release in this blog. Also refer to _CelegansWholeIntegration_ preprint for additional details about the work: [BiorXiv Preprint](https://www.biorxiv.org/content/10.1101/724328v1).
 
