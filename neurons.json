@@ -1,0 +1,1678 @@
+{
+  "neurons": [
+    {
+      "index": 0, 
+      "group": "sensory", 
+      "name": "IL2DL", 
+      "degree": 0.0
+    }, 
+    {
+      "index": 1, 
+      "group": "sensory", 
+      "name": "IL2VL", 
+      "degree": 1.0
+    }, 
+    {
+      "index": 2, 
+      "group": "sensory", 
+      "name": "IL2L", 
+      "degree": 5.0
+    }, 
+    {
+      "index": 3, 
+      "group": "sensory", 
+      "name": "URADL", 
+      "degree": 7.0
+    }, 
+    {
+      "index": 4, 
+      "group": "sensory", 
+      "name": "IL1VL", 
+      "degree": 15.0
+    }, 
+    {
+      "index": 5, 
+      "group": "sensory", 
+      "name": "IL2DR", 
+      "degree": 0.0
+    }, 
+    {
+      "index": 6, 
+      "group": "sensory", 
+      "name": "IL1DL", 
+      "degree": 15.0
+    }, 
+    {
+      "index": 7, 
+      "group": "sensory", 
+      "name": "OLLL", 
+      "degree": 9.0
+    }, 
+    {
+      "index": 8, 
+      "group": "sensory", 
+      "name": "IL1L", 
+      "degree": 4.0
+    }, 
+    {
+      "index": 9, 
+      "group": "sensory", 
+      "name": "URYDL", 
+      "degree": 5.0
+    }, 
+    {
+      "index": 10, 
+      "group": "sensory", 
+      "name": "OLQDL", 
+      "degree": 19.0
+    }, 
+    {
+      "index": 11, 
+      "group": "sensory", 
+      "name": "URYDR", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 12, 
+      "group": "sensory", 
+      "name": "IL2R", 
+      "degree": 3.0
+    }, 
+    {
+      "index": 13, 
+      "group": "sensory", 
+      "name": "URYVL", 
+      "degree": 1.0
+    }, 
+    {
+      "index": 14, 
+      "group": "inter", 
+      "name": "RIPL", 
+      "degree": 48.0
+    }, 
+    {
+      "index": 15, 
+      "group": "sensory", 
+      "name": "OLLR", 
+      "degree": 25.0
+    }, 
+    {
+      "index": 16, 
+      "group": "inter", 
+      "name": "URBL", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 17, 
+      "group": "sensory", 
+      "name": "IL2VR", 
+      "degree": 3.0
+    }, 
+    {
+      "index": 18, 
+      "group": "sensory", 
+      "name": "IL1DR", 
+      "degree": 17.0
+    }, 
+    {
+      "index": 19, 
+      "group": "sensory", 
+      "name": "URADR", 
+      "degree": 5.0
+    }, 
+    {
+      "index": 20, 
+      "group": "sensory", 
+      "name": "IL1R", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 21, 
+      "group": "sensory", 
+      "name": "URAVL", 
+      "degree": 5.0
+    }, 
+    {
+      "index": 22, 
+      "group": "sensory", 
+      "name": "OLQVL", 
+      "degree": 18.0
+    }, 
+    {
+      "index": 23, 
+      "group": "motor", 
+      "name": "RMED", 
+      "degree": 9.0
+    }, 
+    {
+      "index": 24, 
+      "group": "inter", 
+      "name": "URBR", 
+      "degree": 3.0
+    }, 
+    {
+      "index": 25, 
+      "group": "sensory", 
+      "name": "OLQDR", 
+      "degree": 12.0
+    }, 
+    {
+      "index": 26, 
+      "group": "sensory", 
+      "name": "URYVR", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 27, 
+      "group": "inter", 
+      "name": "RIPR", 
+      "degree": 60.0
+    }, 
+    {
+      "index": 28, 
+      "group": "motor", 
+      "name": "RMEL", 
+      "degree": 19.0
+    }, 
+    {
+      "index": 29, 
+      "group": "sensory", 
+      "name": "BAGL", 
+      "degree": 7.0
+    }, 
+    {
+      "index": 30, 
+      "group": "sensory", 
+      "name": "CEPVL", 
+      "degree": 10.0
+    }, 
+    {
+      "index": 31, 
+      "group": "sensory", 
+      "name": "BAGR", 
+      "degree": 11.0
+    }, 
+    {
+      "index": 32, 
+      "group": "sensory", 
+      "name": "OLQVR", 
+      "degree": 19.0
+    }, 
+    {
+      "index": 33, 
+      "group": "sensory", 
+      "name": "URAVR", 
+      "degree": 5.0
+    }, 
+    {
+      "index": 34, 
+      "group": "motor", 
+      "name": "RMER", 
+      "degree": 26.0
+    }, 
+    {
+      "index": 35, 
+      "group": "sensory", 
+      "name": "IL1VR", 
+      "degree": 12.0
+    }, 
+    {
+      "index": 36, 
+      "group": "motor", 
+      "name": "RID", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 37, 
+      "group": "sensory", 
+      "name": "CEPVR", 
+      "degree": 12.0
+    }, 
+    {
+      "index": 38, 
+      "group": "motor", 
+      "name": "RMEV", 
+      "degree": 23.0
+    }, 
+    {
+      "index": 39, 
+      "group": "sensory", 
+      "name": "CEPDL", 
+      "degree": 10.0
+    }, 
+    {
+      "index": 40, 
+      "group": "motor", 
+      "name": "RMDVL", 
+      "degree": 64.0
+    }, 
+    {
+      "index": 41, 
+      "group": "inter", 
+      "name": "SAAVL", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 42, 
+      "group": "motor", 
+      "name": "SMDVL", 
+      "degree": 34.0
+    }, 
+    {
+      "index": 43, 
+      "group": "sensory", 
+      "name": "URXL", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 44, 
+      "group": "inter", 
+      "name": "ALA", 
+      "degree": 3.0
+    }, 
+    {
+      "index": 45, 
+      "group": "motor", 
+      "name": "RMDVR", 
+      "degree": 62.0
+    }, 
+    {
+      "index": 46, 
+      "group": "sensory", 
+      "name": "CEPDR", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 47, 
+      "group": "inter", 
+      "name": "AVAL", 
+      "degree": 237.0
+    }, 
+    {
+      "index": 48, 
+      "group": "inter", 
+      "name": "RIAL", 
+      "degree": 112.0
+    }, 
+    {
+      "index": 49, 
+      "group": "sensory", 
+      "name": "ASKL", 
+      "degree": 19.0
+    }, 
+    {
+      "index": 50, 
+      "group": "inter", 
+      "name": "SAAVR", 
+      "degree": 11.0
+    }, 
+    {
+      "index": 51, 
+      "group": "motor", 
+      "name": "RMDL", 
+      "degree": 45.0
+    }, 
+    {
+      "index": 52, 
+      "group": "sensory", 
+      "name": "URXR", 
+      "degree": 14.0
+    }, 
+    {
+      "index": 53, 
+      "group": "motor", 
+      "name": "SMDVR", 
+      "degree": 40.0
+    }, 
+    {
+      "index": 54, 
+      "group": "sensory", 
+      "name": "AFDL", 
+      "degree": 11.0
+    }, 
+    {
+      "index": 55, 
+      "group": "inter", 
+      "name": "AVAR", 
+      "degree": 240.0
+    }, 
+    {
+      "index": 56, 
+      "group": "inter", 
+      "name": "RIAR", 
+      "degree": 97.0
+    }, 
+    {
+      "index": 57, 
+      "group": "sensory", 
+      "name": "ASKR", 
+      "degree": 11.0
+    }, 
+    {
+      "index": 58, 
+      "group": "inter", 
+      "name": "AVEL", 
+      "degree": 105.0
+    }, 
+    {
+      "index": 59, 
+      "group": "sensory", 
+      "name": "ADLL", 
+      "degree": 3.0
+    }, 
+    {
+      "index": 60, 
+      "group": "sensory", 
+      "name": "ADFL", 
+      "degree": 12.0
+    }, 
+    {
+      "index": 61, 
+      "group": "motor", 
+      "name": "RMDR", 
+      "degree": 45.0
+    }, 
+    {
+      "index": 62, 
+      "group": "sensory", 
+      "name": "AFDR", 
+      "degree": 16.0
+    }, 
+    {
+      "index": 63, 
+      "group": "inter", 
+      "name": "SIBDL", 
+      "degree": 3.0
+    }, 
+    {
+      "index": 64, 
+      "group": "inter", 
+      "name": "RIH", 
+      "degree": 28.0
+    }, 
+    {
+      "index": 65, 
+      "group": "sensory", 
+      "name": "AWBL", 
+      "degree": 6.0
+    }, 
+    {
+      "index": 66, 
+      "group": "inter", 
+      "name": "AVER", 
+      "degree": 104.0
+    }, 
+    {
+      "index": 67, 
+      "group": "motor", 
+      "name": "RMDDL", 
+      "degree": 67.0
+    }, 
+    {
+      "index": 68, 
+      "group": "sensory", 
+      "name": "AWCL", 
+      "degree": 15.0
+    }, 
+    {
+      "index": 69, 
+      "group": "sensory", 
+      "name": "ADFR", 
+      "degree": 16.0
+    }, 
+    {
+      "index": 70, 
+      "group": "sensory", 
+      "name": "ASGL", 
+      "degree": 4.0
+    }, 
+    {
+      "index": 71, 
+      "group": "inter", 
+      "name": "SAADL", 
+      "degree": 24.0
+    }, 
+    {
+      "index": 72, 
+      "group": "sensory", 
+      "name": "ADLR", 
+      "degree": 4.0
+    }, 
+    {
+      "index": 73, 
+      "group": "sensory", 
+      "name": "AWAL", 
+      "degree": 3.0
+    }, 
+    {
+      "index": 74, 
+      "group": "sensory", 
+      "name": "AWBR", 
+      "degree": 6.0
+    }, 
+    {
+      "index": 75, 
+      "group": "sensory", 
+      "name": "ASIL", 
+      "degree": 0.0
+    }, 
+    {
+      "index": 76, 
+      "group": "sensory", 
+      "name": "ASHL", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 77, 
+      "group": "inter", 
+      "name": "SIBDR", 
+      "degree": 7.0
+    }, 
+    {
+      "index": 78, 
+      "group": "sensory", 
+      "name": "ASGR", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 79, 
+      "group": "inter", 
+      "name": "AIBL", 
+      "degree": 72.0
+    }, 
+    {
+      "index": 80, 
+      "group": "sensory", 
+      "name": "ASHR", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 81, 
+      "group": "sensory", 
+      "name": "AWCR", 
+      "degree": 15.0
+    }, 
+    {
+      "index": 82, 
+      "group": "sensory", 
+      "name": "AWAR", 
+      "degree": 6.0
+    }, 
+    {
+      "index": 83, 
+      "group": "inter", 
+      "name": "SIBVL", 
+      "degree": 9.0
+    }, 
+    {
+      "index": 84, 
+      "group": "motor", 
+      "name": "RIVL", 
+      "degree": 6.0
+    }, 
+    {
+      "index": 85, 
+      "group": "motor", 
+      "name": "SMDDL", 
+      "degree": 47.0
+    }, 
+    {
+      "index": 86, 
+      "group": "inter", 
+      "name": "SAADR", 
+      "degree": 21.0
+    }, 
+    {
+      "index": 87, 
+      "group": "motor", 
+      "name": "RMHL", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 88, 
+      "group": "motor", 
+      "name": "RMDDR", 
+      "degree": 67.0
+    }, 
+    {
+      "index": 89, 
+      "group": "sensory", 
+      "name": "ASIR", 
+      "degree": 0.0
+    }, 
+    {
+      "index": 90, 
+      "group": "inter", 
+      "name": "AVHL", 
+      "degree": 17.0
+    }, 
+    {
+      "index": 91, 
+      "group": "inter", 
+      "name": "AVHR", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 92, 
+      "group": "motor", 
+      "name": "RIVR", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 93, 
+      "group": "inter", 
+      "name": "AIBR", 
+      "degree": 80.0
+    }, 
+    {
+      "index": 94, 
+      "group": "inter", 
+      "name": "RIBL", 
+      "degree": 52.0
+    }, 
+    {
+      "index": 95, 
+      "group": "motor", 
+      "name": "RMFL", 
+      "degree": 12.0
+    }, 
+    {
+      "index": 96, 
+      "group": "inter", 
+      "name": "AVBL", 
+      "degree": 111.0
+    }, 
+    {
+      "index": 97, 
+      "group": "inter", 
+      "name": "SIBVR", 
+      "degree": 7.0
+    }, 
+    {
+      "index": 98, 
+      "group": "sensory", 
+      "name": "ASEL", 
+      "degree": 14.0
+    }, 
+    {
+      "index": 99, 
+      "group": "inter", 
+      "name": "AVJR", 
+      "degree": 35.0
+    }, 
+    {
+      "index": 100, 
+      "group": "inter", 
+      "name": "AUAL", 
+      "degree": 14.0
+    }, 
+    {
+      "index": 101, 
+      "group": "inter", 
+      "name": "SIADL", 
+      "degree": 5.0
+    }, 
+    {
+      "index": 102, 
+      "group": "motor", 
+      "name": "RMHR", 
+      "degree": 14.0
+    }, 
+    {
+      "index": 103, 
+      "group": "inter", 
+      "name": "AVJL", 
+      "degree": 39.0
+    }, 
+    {
+      "index": 104, 
+      "group": "sensory", 
+      "name": "ASER", 
+      "degree": 16.0
+    }, 
+    {
+      "index": 105, 
+      "group": "inter", 
+      "name": "AVBR", 
+      "degree": 132.0
+    }, 
+    {
+      "index": 106, 
+      "group": "inter", 
+      "name": "RIBR", 
+      "degree": 54.0
+    }, 
+    {
+      "index": 107, 
+      "group": "motor", 
+      "name": "RMFR", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 108, 
+      "group": "motor", 
+      "name": "SMDDR", 
+      "degree": 64.0
+    }, 
+    {
+      "index": 109, 
+      "group": "inter", 
+      "name": "AIAL", 
+      "degree": 58.0
+    }, 
+    {
+      "index": 110, 
+      "group": "inter", 
+      "name": "RIR", 
+      "degree": 23.0
+    }, 
+    {
+      "index": 111, 
+      "group": "motor", 
+      "name": "SMBDL", 
+      "degree": 20.0
+    }, 
+    {
+      "index": 112, 
+      "group": "motor", 
+      "name": "RIML", 
+      "degree": 54.0
+    }, 
+    {
+      "index": 113, 
+      "group": "sensory", 
+      "name": "ASJL", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 114, 
+      "group": "motor", 
+      "name": "RIMR", 
+      "degree": 67.0
+    }, 
+    {
+      "index": 115, 
+      "group": "inter", 
+      "name": "AUAR", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 116, 
+      "group": "inter", 
+      "name": "AVDR", 
+      "degree": 73.0
+    }, 
+    {
+      "index": 117, 
+      "group": "motor", 
+      "name": "SMBVR", 
+      "degree": 16.0
+    }, 
+    {
+      "index": 118, 
+      "group": "inter", 
+      "name": "AVDL", 
+      "degree": 70.0
+    }, 
+    {
+      "index": 119, 
+      "group": "inter", 
+      "name": "AINL", 
+      "degree": 0.0
+    }, 
+    {
+      "index": 120, 
+      "group": "motor", 
+      "name": "SMBVL", 
+      "degree": 22.0
+    }, 
+    {
+      "index": 121, 
+      "group": "sensory", 
+      "name": "ASJR", 
+      "degree": 3.0
+    }, 
+    {
+      "index": 122, 
+      "group": "inter", 
+      "name": "AINR", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 123, 
+      "group": "inter", 
+      "name": "SIADR", 
+      "degree": 4.0
+    }, 
+    {
+      "index": 124, 
+      "group": "motor", 
+      "name": "AVL", 
+      "degree": 27.0
+    }, 
+    {
+      "index": 125, 
+      "group": "inter", 
+      "name": "RICL", 
+      "degree": 23.0
+    }, 
+    {
+      "index": 126, 
+      "group": "inter", 
+      "name": "AIAR", 
+      "degree": 66.0
+    }, 
+    {
+      "index": 127, 
+      "group": "motor", 
+      "name": "SMBDR", 
+      "degree": 17.0
+    }, 
+    {
+      "index": 128, 
+      "group": "inter", 
+      "name": "AIZR", 
+      "degree": 41.0
+    }, 
+    {
+      "index": 129, 
+      "group": "inter", 
+      "name": "SIAVL", 
+      "degree": 7.0
+    }, 
+    {
+      "index": 130, 
+      "group": "inter", 
+      "name": "SIAVR", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 131, 
+      "group": "inter", 
+      "name": "RICR", 
+      "degree": 25.0
+    }, 
+    {
+      "index": 132, 
+      "group": "inter", 
+      "name": "AIZL", 
+      "degree": 62.0
+    }, 
+    {
+      "index": 133, 
+      "group": "inter", 
+      "name": "AIYR", 
+      "degree": 47.0
+    }, 
+    {
+      "index": 134, 
+      "group": "inter", 
+      "name": "AIMR", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 135, 
+      "group": "inter", 
+      "name": "AIML", 
+      "degree": 4.0
+    }, 
+    {
+      "index": 136, 
+      "group": "inter", 
+      "name": "RIS", 
+      "degree": 11.0
+    }, 
+    {
+      "index": 137, 
+      "group": "inter", 
+      "name": "AIYL", 
+      "degree": 43.0
+    }, 
+    {
+      "index": 138, 
+      "group": "motor", 
+      "name": "VB02", 
+      "degree": 4.0
+    }, 
+    {
+      "index": 139, 
+      "group": "inter", 
+      "name": "AVKR", 
+      "degree": 24.0
+    }, 
+    {
+      "index": 140, 
+      "group": "inter", 
+      "name": "AVKL", 
+      "degree": 59.0
+    }, 
+    {
+      "index": 141, 
+      "group": "inter", 
+      "name": "AVFR", 
+      "degree": 19.0
+    }, 
+    {
+      "index": 142, 
+      "group": "inter", 
+      "name": "SABVL", 
+      "degree": 24.0
+    }, 
+    {
+      "index": 143, 
+      "group": "sensory", 
+      "name": "FLPL", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 144, 
+      "group": "sensory", 
+      "name": "FLPR", 
+      "degree": 3.0
+    }, 
+    {
+      "index": 145, 
+      "group": "inter", 
+      "name": "SABVR", 
+      "degree": 12.0
+    }, 
+    {
+      "index": 146, 
+      "group": "inter", 
+      "name": "AVFL", 
+      "degree": 25.0
+    }, 
+    {
+      "index": 147, 
+      "group": "sensory", 
+      "name": "AQR", 
+      "degree": 10.0
+    }, 
+    {
+      "index": 148, 
+      "group": "inter", 
+      "name": "RIFR", 
+      "degree": 12.0
+    }, 
+    {
+      "index": 149, 
+      "group": "sensory", 
+      "name": "ADEL", 
+      "degree": 10.0
+    }, 
+    {
+      "index": 150, 
+      "group": "motor", 
+      "name": "VB01", 
+      "degree": 9.8
+    }, 
+    {
+      "index": 151, 
+      "group": "sensory", 
+      "name": "ADER", 
+      "degree": 12.0
+    }, 
+    {
+      "index": 152, 
+      "group": "motor", 
+      "name": "DB02", 
+      "degree": 7.0
+    }, 
+    {
+      "index": 153, 
+      "group": "inter", 
+      "name": "ADAR", 
+      "degree": 10.0
+    }, 
+    {
+      "index": 154, 
+      "group": "inter", 
+      "name": "ADAL", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 155, 
+      "group": "inter", 
+      "name": "RIGR", 
+      "degree": 32.0
+    }, 
+    {
+      "index": 156, 
+      "group": "motor", 
+      "name": "RMGL", 
+      "degree": 12.0
+    }, 
+    {
+      "index": 157, 
+      "group": "motor", 
+      "name": "RMGR", 
+      "degree": 10.0
+    }, 
+    {
+      "index": 158, 
+      "group": "inter", 
+      "name": "RIFL", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 159, 
+      "group": "inter", 
+      "name": "AVG", 
+      "degree": 12.0
+    }, 
+    {
+      "index": 160, 
+      "group": "motor", 
+      "name": "VA01", 
+      "degree": 13.6
+    }, 
+    {
+      "index": 161, 
+      "group": "inter", 
+      "name": "SABD", 
+      "degree": 21.0
+    }, 
+    {
+      "index": 162, 
+      "group": "inter", 
+      "name": "RIGL", 
+      "degree": 35.0
+    }, 
+    {
+      "index": 163, 
+      "group": "motor", 
+      "name": "DD01", 
+      "degree": 100.4
+    }, 
+    {
+      "index": 164, 
+      "group": "motor", 
+      "name": "DB01", 
+      "degree": 1.0
+    }, 
+    {
+      "index": 165, 
+      "group": "motor", 
+      "name": "AS01", 
+      "degree": 9.0
+    }, 
+    {
+      "index": 166, 
+      "group": "motor", 
+      "name": "VD01", 
+      "degree": 53.3
+    }, 
+    {
+      "index": 167, 
+      "group": "motor", 
+      "name": "DA01", 
+      "degree": 19.5
+    }, 
+    {
+      "index": 168, 
+      "group": "motor", 
+      "name": "VD02", 
+      "degree": 58.2
+    }, 
+    {
+      "index": 169, 
+      "group": "motor", 
+      "name": "VA02", 
+      "degree": 10.6
+    }, 
+    {
+      "index": 170, 
+      "group": "motor", 
+      "name": "VB03", 
+      "degree": 4.8
+    }, 
+    {
+      "index": 171, 
+      "group": "motor", 
+      "name": "AS02", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 172, 
+      "group": "motor", 
+      "name": "DB03", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 173, 
+      "group": "motor", 
+      "name": "DA02", 
+      "degree": 13.5
+    }, 
+    {
+      "index": 174, 
+      "group": "motor", 
+      "name": "VD03", 
+      "degree": 48.3
+    }, 
+    {
+      "index": 175, 
+      "group": "inter", 
+      "name": "BDUR", 
+      "degree": 17.0
+    }, 
+    {
+      "index": 176, 
+      "group": "inter", 
+      "name": "BDUL", 
+      "degree": 14.0
+    }, 
+    {
+      "index": 177, 
+      "group": "motor", 
+      "name": "VA03", 
+      "degree": 19.6
+    }, 
+    {
+      "index": 178, 
+      "group": "inter", 
+      "name": "SDQR", 
+      "degree": 0.0
+    }, 
+    {
+      "index": 179, 
+      "group": "motor", 
+      "name": "VB04", 
+      "degree": 6.0
+    }, 
+    {
+      "index": 180, 
+      "group": "motor", 
+      "name": "VC01", 
+      "degree": 7.0
+    }, 
+    {
+      "index": 181, 
+      "group": "motor", 
+      "name": "DD02", 
+      "degree": 112.4
+    }, 
+    {
+      "index": 182, 
+      "group": "motor", 
+      "name": "AS03", 
+      "degree": 6.0
+    }, 
+    {
+      "index": 183, 
+      "group": "motor", 
+      "name": "VD04", 
+      "degree": 64.2
+    }, 
+    {
+      "index": 184, 
+      "group": "motor", 
+      "name": "DA03", 
+      "degree": 20.5
+    }, 
+    {
+      "index": 185, 
+      "group": "motor", 
+      "name": "VA04", 
+      "degree": 8.6
+    }, 
+    {
+      "index": 186, 
+      "group": "motor", 
+      "name": "VB05", 
+      "degree": 4.8
+    }, 
+    {
+      "index": 187, 
+      "group": "motor", 
+      "name": "VC02", 
+      "degree": 10.0
+    }, 
+    {
+      "index": 188, 
+      "group": "motor", 
+      "name": "DB04", 
+      "degree": 11.0
+    }, 
+    {
+      "index": 189, 
+      "group": "motor", 
+      "name": "AS04", 
+      "degree": 6.0
+    }, 
+    {
+      "index": 190, 
+      "group": "motor", 
+      "name": "VD05", 
+      "degree": 60.3
+    }, 
+    {
+      "index": 191, 
+      "group": "motor", 
+      "name": "VA05", 
+      "degree": 12.6
+    }, 
+    {
+      "index": 192, 
+      "group": "sensory", 
+      "name": "AVM", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 193, 
+      "group": "motor", 
+      "name": "VB06", 
+      "degree": 6.0
+    }, 
+    {
+      "index": 194, 
+      "group": "motor", 
+      "name": "DA04", 
+      "degree": 19.5
+    }, 
+    {
+      "index": 195, 
+      "group": "motor", 
+      "name": "DD03", 
+      "degree": 117.4
+    }, 
+    {
+      "index": 196, 
+      "group": "sensory", 
+      "name": "ALML", 
+      "degree": 5.0
+    }, 
+    {
+      "index": 197, 
+      "group": "sensory", 
+      "name": "ALMR", 
+      "degree": 1.0
+    }, 
+    {
+      "index": 198, 
+      "group": "motor", 
+      "name": "VC03", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 199, 
+      "group": "motor", 
+      "name": "AS05", 
+      "degree": 10.0
+    }, 
+    {
+      "index": 200, 
+      "group": "motor", 
+      "name": "VD06", 
+      "degree": 60.2
+    }, 
+    {
+      "index": 201, 
+      "group": "motor", 
+      "name": "VA06", 
+      "degree": 11.6
+    }, 
+    {
+      "index": 202, 
+      "group": "motor", 
+      "name": "VB07", 
+      "degree": 6.8
+    }, 
+    {
+      "index": 203, 
+      "group": "motor", 
+      "name": "DB05", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 204, 
+      "group": "motor", 
+      "name": "AS06", 
+      "degree": 7.0
+    }, 
+    {
+      "index": 205, 
+      "group": "motor", 
+      "name": "VD07", 
+      "degree": 50.3
+    }, 
+    {
+      "index": 206, 
+      "group": "motor", 
+      "name": "VC04", 
+      "degree": 1.0
+    }, 
+    {
+      "index": 207, 
+      "group": "motor", 
+      "name": "DA05", 
+      "degree": 16.5
+    }, 
+    {
+      "index": 208, 
+      "group": "motor", 
+      "name": "VC05", 
+      "degree": 4.0
+    }, 
+    {
+      "index": 209, 
+      "group": "motor", 
+      "name": "HSNR", 
+      "degree": 22.0
+    }, 
+    {
+      "index": 210, 
+      "group": "motor", 
+      "name": "HSNL", 
+      "degree": 12.0
+    }, 
+    {
+      "index": 211, 
+      "group": "motor", 
+      "name": "VA07", 
+      "degree": 6.6
+    }, 
+    {
+      "index": 212, 
+      "group": "motor", 
+      "name": "VB08", 
+      "degree": 4.0
+    }, 
+    {
+      "index": 213, 
+      "group": "motor", 
+      "name": "AS07", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 214, 
+      "group": "motor", 
+      "name": "DD04", 
+      "degree": 105.4
+    }, 
+    {
+      "index": 215, 
+      "group": "motor", 
+      "name": "VD08", 
+      "degree": 53.2
+    }, 
+    {
+      "index": 216, 
+      "group": "motor", 
+      "name": "VA08", 
+      "degree": 23.6
+    }, 
+    {
+      "index": 217, 
+      "group": "motor", 
+      "name": "VB09", 
+      "degree": 3.8
+    }, 
+    {
+      "index": 218, 
+      "group": "motor", 
+      "name": "DB06", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 219, 
+      "group": "motor", 
+      "name": "AS08", 
+      "degree": 12.0
+    }, 
+    {
+      "index": 220, 
+      "group": "sensory", 
+      "name": "PDEL", 
+      "degree": 18.0
+    }, 
+    {
+      "index": 221, 
+      "group": "motor", 
+      "name": "VD09", 
+      "degree": 44.3
+    }, 
+    {
+      "index": 222, 
+      "group": "sensory", 
+      "name": "PDER", 
+      "degree": 16.0
+    }, 
+    {
+      "index": 223, 
+      "group": "inter", 
+      "name": "SDQL", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 224, 
+      "group": "motor", 
+      "name": "DA06", 
+      "degree": 28.5
+    }, 
+    {
+      "index": 225, 
+      "group": "sensory", 
+      "name": "PVDL", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 226, 
+      "group": "sensory", 
+      "name": "PVDR", 
+      "degree": 0.0
+    }, 
+    {
+      "index": 227, 
+      "group": "sensory", 
+      "name": "PVM", 
+      "degree": 3.0
+    }, 
+    {
+      "index": 228, 
+      "group": "motor", 
+      "name": "VA09", 
+      "degree": 21.6
+    }, 
+    {
+      "index": 229, 
+      "group": "motor", 
+      "name": "VB10", 
+      "degree": 6.0
+    }, 
+    {
+      "index": 230, 
+      "group": "motor", 
+      "name": "AS09", 
+      "degree": 15.0
+    }, 
+    {
+      "index": 231, 
+      "group": "motor", 
+      "name": "DD05", 
+      "degree": 94.4
+    }, 
+    {
+      "index": 232, 
+      "group": "motor", 
+      "name": "VD10", 
+      "degree": 54.2
+    }, 
+    {
+      "index": 233, 
+      "group": "motor", 
+      "name": "VA10", 
+      "degree": 12.6
+    }, 
+    {
+      "index": 234, 
+      "group": "motor", 
+      "name": "VB11", 
+      "degree": 6.0
+    }, 
+    {
+      "index": 235, 
+      "group": "motor", 
+      "name": "DB07", 
+      "degree": 10.0
+    }, 
+    {
+      "index": 236, 
+      "group": "motor", 
+      "name": "AS10", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 237, 
+      "group": "motor", 
+      "name": "DA07", 
+      "degree": 5.0
+    }, 
+    {
+      "index": 238, 
+      "group": "motor", 
+      "name": "VD11", 
+      "degree": 46.3
+    }, 
+    {
+      "index": 239, 
+      "group": "motor", 
+      "name": "VA11", 
+      "degree": 24.3
+    }, 
+    {
+      "index": 240, 
+      "group": "motor", 
+      "name": "AS11", 
+      "degree": 16.0
+    }, 
+    {
+      "index": 241, 
+      "group": "motor", 
+      "name": "VD12", 
+      "degree": 14.0
+    }, 
+    {
+      "index": 242, 
+      "group": "inter", 
+      "name": "PVPR", 
+      "degree": 11.0
+    }, 
+    {
+      "index": 243, 
+      "group": "inter", 
+      "name": "PVT", 
+      "degree": 18.0
+    }, 
+    {
+      "index": 244, 
+      "group": "motor", 
+      "name": "VA12", 
+      "degree": 15.0
+    }, 
+    {
+      "index": 245, 
+      "group": "motor", 
+      "name": "DD06", 
+      "degree": 71.5
+    }, 
+    {
+      "index": 246, 
+      "group": "inter", 
+      "name": "PVPL", 
+      "degree": 10.0
+    }, 
+    {
+      "index": 247, 
+      "group": "motor", 
+      "name": "DA08", 
+      "degree": 24.0
+    }, 
+    {
+      "index": 248, 
+      "group": "motor", 
+      "name": "DA09", 
+      "degree": 23.0
+    }, 
+    {
+      "index": 249, 
+      "group": "motor", 
+      "name": "PDB", 
+      "degree": 1.0
+    }, 
+    {
+      "index": 250, 
+      "group": "motor", 
+      "name": "VD13", 
+      "degree": 26.0
+    }, 
+    {
+      "index": 251, 
+      "group": "motor", 
+      "name": "PDA", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 252, 
+      "group": "motor", 
+      "name": "DVB", 
+      "degree": 0.0
+    }, 
+    {
+      "index": 253, 
+      "group": "inter", 
+      "name": "DVA", 
+      "degree": 105.0
+    }, 
+    {
+      "index": 254, 
+      "group": "inter", 
+      "name": "DVC", 
+      "degree": 15.0
+    }, 
+    {
+      "index": 255, 
+      "group": "inter", 
+      "name": "PVQR", 
+      "degree": 25.0
+    }, 
+    {
+      "index": 256, 
+      "group": "sensory", 
+      "name": "PHAL", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 257, 
+      "group": "sensory", 
+      "name": "PHAR", 
+      "degree": 5.0
+    }, 
+    {
+      "index": 258, 
+      "group": "inter", 
+      "name": "PVQL", 
+      "degree": 23.0
+    }, 
+    {
+      "index": 259, 
+      "group": "sensory", 
+      "name": "PLNR", 
+      "degree": 0.0
+    }, 
+    {
+      "index": 260, 
+      "group": "inter", 
+      "name": "LUAL", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 261, 
+      "group": "inter", 
+      "name": "PVCL", 
+      "degree": 92.0
+    }, 
+    {
+      "index": 262, 
+      "group": "sensory", 
+      "name": "PHBR", 
+      "degree": 11.0
+    }, 
+    {
+      "index": 263, 
+      "group": "sensory", 
+      "name": "ALNL", 
+      "degree": 3.0
+    }, 
+    {
+      "index": 264, 
+      "group": "sensory", 
+      "name": "PHBL", 
+      "degree": 8.0
+    }, 
+    {
+      "index": 265, 
+      "group": "inter", 
+      "name": "LUAR", 
+      "degree": 6.0
+    }, 
+    {
+      "index": 266, 
+      "group": "sensory", 
+      "name": "ALNR", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 267, 
+      "group": "inter", 
+      "name": "PVCR", 
+      "degree": 83.0
+    }, 
+    {
+      "index": 268, 
+      "group": "sensory", 
+      "name": "PQR", 
+      "degree": 5.0
+    }, 
+    {
+      "index": 269, 
+      "group": "inter", 
+      "name": "PVR", 
+      "degree": 14.0
+    }, 
+    {
+      "index": 270, 
+      "group": "inter", 
+      "name": "PVWL", 
+      "degree": 6.0
+    }, 
+    {
+      "index": 271, 
+      "group": "inter", 
+      "name": "PVWR", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 272, 
+      "group": "sensory", 
+      "name": "PLNL", 
+      "degree": 1.0
+    }, 
+    {
+      "index": 273, 
+      "group": "sensory", 
+      "name": "PHCR", 
+      "degree": 0.0
+    }, 
+    {
+      "index": 274, 
+      "group": "sensory", 
+      "name": "PHCL", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 275, 
+      "group": "inter", 
+      "name": "PVNR", 
+      "degree": 19.0
+    }, 
+    {
+      "index": 276, 
+      "group": "sensory", 
+      "name": "PLMR", 
+      "degree": 2.0
+    }, 
+    {
+      "index": 277, 
+      "group": "inter", 
+      "name": "PVNL", 
+      "degree": 13.0
+    }, 
+    {
+      "index": 278, 
+      "group": "sensory", 
+      "name": "PLML", 
+      "degree": 0.0
+    }
+  ]
+}
