@@ -34,7 +34,7 @@ def load_Json(filename):
 def construct_dyn_inputmat(t0, tf, input_type, neuron_indices, dt = 0.01, normalized_amps = False, freqs = False, noise_amplitudes = False, step_time_interval = False):
 
     timepoints = np.arange(t0, tf, dt)
-    input_mat = np.zeros((len(timepoints) + 1, n_params.default['N']))
+    input_mat = np.zeros((len(timepoints) + 1, n_params.pA_unit_baseline['N']))
 
     if input_type == 'sinusoidal':
         

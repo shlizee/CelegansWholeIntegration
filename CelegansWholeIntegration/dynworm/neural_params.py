@@ -14,17 +14,17 @@ from dynworm import sys_paths as paths
 os.chdir(paths.connectome_data_dir)
 
 """ Gap junctions (Chemical, 279*279) """
-Gg_Static = np.load('Gg_v3_5_extrapolate.npy') # Cook et al (not weighted) + haspel
+Gg_Static_v3_5_extrapolate = np.load('Gg_v3_5_extrapolate.npy') # Cook et al (not weighted) + haspel
 
 """ Synaptic connections (Chemical, 279*279) """
-Gs_Static = np.load('Gs_v3_5_extrapolate.npy') # Cook et al (not weighted) + haspel
+Gs_Static_v3_5_extrapolate = np.load('Gs_v3_5_extrapolate.npy') # Cook et al (not weighted) + haspel
 
 """ Old versions """
 Gg_Static_v1 = np.load('Gg_v1.npy') # Varshney et al
 Gs_Static_v1 = np.load('Gs_v1.npy') # Varshney et al
 
-Gg_Static_v3 = np.load('Gg_v3.npy') # Varshney et al + Haspel
-Gs_Static_v3 = np.load('Gs_v3.npy') # Varshney et al + Haspel
+Gg_Static = np.load('Gg_v3.npy') # Varshney et al + Haspel
+Gs_Static = np.load('Gs_v3.npy') # Varshney et al + Haspel
 
 Gg_Static_v3_5 = np.load('Gg_v3_5.npy') # Cook et al (not weighted)
 Gs_Static_v3_5 = np.load('Gs_v3_5.npy') # Cook et al (not weighted)

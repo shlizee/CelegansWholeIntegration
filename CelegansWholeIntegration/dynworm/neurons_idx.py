@@ -105,14 +105,14 @@ BDA_grp = np.union1d(BD_grp, A_grp)
 ########################################################################################################################################################################
 ########################################################################################################################################################################
 
-B_grp_bool = np.zeros(n_params.default['N'], dtype = 'bool')
+B_grp_bool = np.zeros(n_params.pA_unit_baseline['N'], dtype = 'bool')
 B_grp_bool[B_grp] = True
 
-AVB_B_grp_bool = np.zeros(n_params.default['N'], dtype = 'bool')
+AVB_B_grp_bool = np.zeros(n_params.pA_unit_baseline['N'], dtype = 'bool')
 AVB_B_grp_bool[AVB_B_grp] = True
 
-BD_grp_bool = np.zeros(n_params.default['N'], dtype = 'bool')
+BD_grp_bool = np.zeros(n_params.pA_unit_baseline['N'], dtype = 'bool')
 BD_grp_bool[BD_grp] = True
 
-BDA_grp_bool = np.zeros(n_params.default['N'], dtype = 'bool')
+BDA_grp_bool = np.zeros(n_params.pA_unit_baseline['N'], dtype = 'bool')
 BDA_grp_bool[BDA_grp] = True

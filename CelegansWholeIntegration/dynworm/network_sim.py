@@ -1601,20 +1601,20 @@ def AWA_nonlinear_current(AWA_dyn_vec):
     qinf = 0.5*(1 + np.tanh((v-params_obj_neural['AWA_nonlinear_params']['vq1'])/params_obj_neural['AWA_nonlinear_params']['vq2'])) 
     pinf = 0.5*(1 + np.tanh((v-params_obj_neural['AWA_nonlinear_params']['vp1'])/params_obj_neural['AWA_nonlinear_params']['vp2']))
 
-    gkt = params_obj_neural['AWA_nonlinear_params']['TKL']+(params_obj_neural['AWA_nonlinear_params']['TKH']-params_obj_neural['AWA_nonlinear_params']['TKL'])*0.5*
+    gkt = params_obj_neural['AWA_nonlinear_params']['TKL']+(params_obj_neural['AWA_nonlinear_params']['TKH']-params_obj_neural['AWA_nonlinear_params']['TKL'])*0.5*\
     (1+np.tanh(v-params_obj_neural['AWA_nonlinear_params']['vtk1'])/params_obj_neural['AWA_nonlinear_params']['vtk2'])
 
     tau = 1.0/np.cosh((v-params_obj_neural['AWA_nonlinear_params']['vt1'])/(2*params_obj_neural['AWA_nonlinear_params']['vt2']))
     kir = -np.log(1+np.exp(-0.2*(v-params_obj_neural['AWA_nonlinear_params']['vK']-params_obj_neural['AWA_nonlinear_params']['gKI'])))/0.2+params_obj_neural['AWA_nonlinear_params']['gKI']
     
     KCurr = np.zeros(params_obj_neural['N'])
-    np.put(KCurr, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], (params_obj_neural['AWA_nonlinear_params']['gK']*w+params_obj_neural['AWA_nonlinear_params']['gK7']*
-        slo2+params_obj_neural['AWA_nonlinear_params']['gK4']*slo+params_obj_neural['AWA_nonlinear_params']['gK6']+params_obj_neural['AWA_nonlinear_params']['gK3']*
+    np.put(KCurr, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], (params_obj_neural['AWA_nonlinear_params']['gK']*w+params_obj_neural['AWA_nonlinear_params']['gK7']*\
+        slo2+params_obj_neural['AWA_nonlinear_params']['gK4']*slo+params_obj_neural['AWA_nonlinear_params']['gK6']+params_obj_neural['AWA_nonlinear_params']['gK3']*\
         yinf*(1-bk)+params_obj_neural['AWA_nonlinear_params']['gK5']*kb)*(v-params_obj_neural['AWA_nonlinear_params']['vK']) + params_obj_neural['AWA_nonlinear_params']['gK2']*kir)
 
     """ calcium current """
     CaCurr = np.zeros(params_obj_neural['N'])
-    np.put(CaCurr, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], params_obj_neural['AWA_nonlinear_params']['gCa']*(c1+params_obj_neural['AWA_nonlinear_params']['fac']*c2)*
+    np.put(CaCurr, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], params_obj_neural['AWA_nonlinear_params']['gCa']*(c1+params_obj_neural['AWA_nonlinear_params']['fac']*c2)*\
         (v-params_obj_neural['AWA_nonlinear_params']['vCa']))
 
     """ dw, etc """
@@ -1827,7 +1827,7 @@ def combine_baseline_nonlinear_currents(rhs_dict): # Needs to be simplified
 
         return np.concatenate((dV, dS, dAVL_dyn_vec[params_obj_neural['N']:]))
 
-    else
+    else:
 
         AWA_dyn_vec = np.concatenate([rhs_dict['Vvec'], rhs_dict['y'][params_obj_neural['N'] * 2:9*params_obj_neural['N']]])
         AVL_dyn_vec = np.concatenate([rhs_dict['Vvec'], rhs_dict['y'][9*params_obj_neural['N']:]])
