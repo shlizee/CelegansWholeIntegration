@@ -41,7 +41,7 @@ os.chdir(paths.default_dir)
 ########################################################################################################################################################################
 
 """
-N: Number of Neurons
+N: Number of Neurons (279)
 Gc: Cell membrane conductance (10pS)
 C: Cell Membrane Capacitance (1.5pF)
 ggap: Gap Junctions scaler (100pS Electrical, 279*279)

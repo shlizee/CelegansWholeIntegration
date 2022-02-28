@@ -36,7 +36,7 @@ def initialize_params_body(custom_params = False):
     if custom_params == False:
 
         params_obj_body = b_params.higher_fluid_density_default.copy()
-        #print('Using the default body parameters')
+        print('Using the default body parameters')
 
     else:
 
@@ -45,7 +45,7 @@ def initialize_params_body(custom_params = False):
         if validate_custom_body_params(custom_params) == True:
 
             params_obj_body = custom_params.copy()
-            #print('Accepted the custom body parameters')
+            print('Accepted the custom body parameters')
 
 def validate_custom_body_params(custom_params):
 

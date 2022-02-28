@@ -22,10 +22,6 @@ from dynworm import utils
 np.random.seed(10)
 
 ########################################################################################################################################################################
-
-# TODO: Resolve how dV/dt handles time
-# TODO: Simpler and more general implementation of additional dynamics
-
 ########################################################################################################################################################################
 ### BASE ENVIRONMENT INITIALIZATION ####################################################################################################################################
 ########################################################################################################################################################################
@@ -45,6 +41,7 @@ def initialize_params_neural(custom_baseline_params = False, additional_params =
 
             params_obj_neural['nonlinear_AWA'] = additional_params['AWA']
             params_obj_neural['nonlinear_AVL'] = additional_params['AVL']
+            print('Using additional neural parameters')
 
     else:
 
@@ -59,6 +56,7 @@ def initialize_params_neural(custom_baseline_params = False, additional_params =
 
                 params_obj_neural['nonlinear_AWA'] = additional_params['AWA']
                 params_obj_neural['nonlinear_AVL'] = additional_params['AVL']
+                print('Using additional neural parameters')
 
 def validate_custom_neural_params(custom_baseline_params):
 
@@ -120,8 +118,6 @@ def run_network_constinput(t_duration, input_vec, ablation_mask, \
     tf = t_duration
     dt = t_delta # recommend 0.01
 
-    params_obj_neural['simulation_type'] = 'constant_input'
-
     nsteps = int(np.floor(tf/dt) + 1)
     params_obj_neural['inmask'] = input_vec
     progress_milestones = np.linspace(0, nsteps, 10).astype('int')
@@ -153,7 +149,7 @@ def run_network_constinput(t_duration, input_vec, ablation_mask, \
 
     else:
 
-        r = integrate.ode(membrane_voltageRHS_constinput).set_integrator('vode', atol = 1e-3, method = 'bdf')
+        r = integrate.ode(membrane_voltageRHS_constinput).set_integrator('vode', atol = 1e-3, method = 'bdf', with_jacobian = True)
      
     r.set_initial_value(initcond, 0)
 
@@ -209,8 +205,6 @@ def run_network_dyninput(input_mat, ablation_mask, \
     tf = (len(input_mat) - 1) * t_delta # the last timepoint to be computed
     dt = t_delta
 
-    params_obj_neural['simulation_type'] = 'dynamic_input'
-
     nsteps = len(input_mat) # nsteps for integrator
     timepoints = np.linspace(t0, tf, nsteps)
     params_obj_neural['interpolate_input'] = interpolate.interp1d(timepoints, input_mat, axis=0, kind = interp_kind_input, fill_value = "extrapolate")
@@ -238,7 +232,7 @@ def run_network_dyninput(input_mat, ablation_mask, \
 
     else:
 
-        r = integrate.ode(membrane_voltageRHS_dyninput).set_integrator('vode', atol = 1e-3, method = 'bdf')
+        r = integrate.ode(membrane_voltageRHS_dyninput).set_integrator('vode', atol = 1e-3, method = 'bdf', with_jacobian = True)
 
     r.set_initial_value(initcond, t0)
 
@@ -307,8 +301,6 @@ def run_network_externalV(input_mat, ext_voltage_mat, ablation_mask, \
     tf = (len(input_mat) - 1) * t_delta
     dt = t_delta
 
-    params_obj_neural['simulation_type'] = 'external_voltage'
-
     nsteps = len(input_mat)
 
     timepoints = np.linspace(t0, tf, nsteps)
@@ -339,7 +331,7 @@ def run_network_externalV(input_mat, ext_voltage_mat, ablation_mask, \
 
     else:
 
-        r = integrate.ode(membrane_voltageRHS_vext).set_integrator('vode', atol = 1e-3, method = 'bdf')
+        r = integrate.ode(membrane_voltageRHS_vext).set_integrator('vode', atol = 1e-3, method = 'bdf', with_jacobian = True)
 
     r.set_initial_value(initcond, t0)
 
@@ -400,8 +392,6 @@ def run_network_fdb(input_mat, ablation_mask, \
     tf = (len(input_mat) - 1) * t_delta
     dt = t_delta
 
-    params_obj_neural['simulation_type'] = 'dynamic input with feedback'
-
     nsteps = len(input_mat)
     timepoints = np.linspace(t0, tf, nsteps)
 
@@ -445,7 +435,7 @@ def run_network_fdb(input_mat, ablation_mask, \
 
     else:
 
-        r = integrate.ode(membrane_voltageRHS_fdb).set_integrator('vode', atol = 1e-3, method = 'bdf')
+        r = integrate.ode(membrane_voltageRHS_fdb).set_integrator('vode', atol = 1e-3, method = 'bdf', with_jacobian = True)
 
     r.set_initial_value(initcond, t0)
 
@@ -509,8 +499,6 @@ def run_network_fdb_externalV(input_mat, ext_voltage_mat, ablation_mask, \
     tf = (len(input_mat) - 1) * t_delta
     dt = t_delta
 
-    params_obj_neural['simulation_type'] = 'external voltage with feedback'
-
     inmask = np.zeros(params_obj_neural['N'])
     nsteps = len(input_mat)
     timepoints = np.linspace(t0, tf, nsteps)
@@ -557,7 +545,7 @@ def run_network_fdb_externalV(input_mat, ext_voltage_mat, ablation_mask, \
 
     else:
 
-        r = integrate.ode(membrane_voltageRHS_fdb_vext).set_integrator('vode', atol = 1e-3, method = 'bdf')
+        r = integrate.ode(membrane_voltageRHS_fdb_vext).set_integrator('vode', atol = 1e-3, method = 'bdf', with_jacobian = True)
 
     r.set_initial_value(initcond, t0)
 
@@ -636,26 +624,26 @@ def compute_initcond_neural():
 
     elif AWA_nonlinear_bool == True and AVL_nonlinear_bool == False:
 
-        params_obj_neural['AWA_nonlinear_params'] = n_params['AWA_nonlinear_params'].copy()
+        params_obj_neural['AWA_nonlinear_params'] = n_params.AWA_nonlinear_params.copy()
 
         voltage_initcond = 10**(-4)*np.random.normal(0, 0.94, params_obj_neural['N'])
-        np.put(initcond1, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], -74.99)
+        np.put(voltage_initcond, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], -74.99)
         synaptic_initcond = 10**(-4)*np.random.normal(0, 0.94, params_obj_neural['N'])
 
         awa_initcond1 = np.zeros(params_obj_neural['N'],) 
-        np.put(awa_initcond1, params_obj_neural['inds'], 2.05e-7)
+        np.put(awa_initcond1, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 2.05e-7)
         awa_initcond2 = np.zeros(params_obj_neural['N'],)
-        np.put(awa_initcond2, params_obj_neural['inds'], 9.71e-6)
+        np.put(awa_initcond2, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 9.71e-6)
         awa_initcond3 = np.zeros(params_obj_neural['N'],)
-        np.put(awa_initcond3, params_obj_neural['inds'], 9.71e-6)
+        np.put(awa_initcond3, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 9.71e-6)
         awa_initcond4 = np.zeros(params_obj_neural['N'],)
-        np.put(awa_initcond4, params_obj_neural['inds'], 8.35e-7)
+        np.put(awa_initcond4, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 8.35e-7)
         awa_initcond5 = np.zeros(params_obj_neural['N'],)
-        np.put(awa_initcond5, params_obj_neural['inds'], 0.000151)
+        np.put(awa_initcond5, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 0.000151)
         awa_initcond6 = np.zeros(params_obj_neural['N'],)
-        np.put(awa_initcond6, params_obj_neural['inds'], 2.069e-9)
+        np.put(awa_initcond6, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 2.069e-9)
         awa_initcond7 = np.zeros(params_obj_neural['N'],)
-        np.put(awa_initcond7, params_obj_neural['inds'], 1.7e-10)
+        np.put(awa_initcond7, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 1.7e-10)
 
         full_initcond = np.concatenate([voltage_initcond, synaptic_initcond, awa_initcond1, awa_initcond2, awa_initcond3, awa_initcond4,
          awa_initcond5, awa_initcond6, awa_initcond7])
@@ -664,10 +652,10 @@ def compute_initcond_neural():
 
     elif AWA_nonlinear_bool == False and AVL_nonlinear_bool == True:
 
-        params_obj_neural['AVL_nonlinear_params'] = n_params['AVL_nonlinear_params'].copy()
+        params_obj_neural['AVL_nonlinear_params'] = n_params.AVL_nonlinear_params.copy()
 
         voltage_initcond = 10**(-4)*np.random.normal(0, 0.94, params_obj_neural['N'])
-        np.put(initcond1, params_obj_neural['AVL_nonlinear_params']['AVL_ind'], -45.7)
+        np.put(voltage_initcond, params_obj_neural['AVL_nonlinear_params']['AVL_ind'], -45.7)
         synaptic_initcond = 10**(-4)*np.random.normal(0, 0.94, params_obj_neural['N'])
         avl_initcond = np.zeros(params_obj_neural['N'] * 16,)
 
@@ -677,28 +665,28 @@ def compute_initcond_neural():
 
     else:
 
-        params_obj_neural['AWA_nonlinear_params'] = n_params['AWA_nonlinear_params'].copy()
-        params_obj_neural['AVL_nonlinear_params'] = n_params['AVL_nonlinear_params'].copy()
+        params_obj_neural['AWA_nonlinear_params'] = n_params.AWA_nonlinear_params.copy()
+        params_obj_neural['AVL_nonlinear_params'] = n_params.AVL_nonlinear_params.copy()
 
         voltage_initcond = 10**(-4)*np.random.normal(0, 0.94, params_obj_neural['N'])
-        np.put(initcond1, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], -74.99)
-        np.put(initcond1, params_obj_neural['AVL_nonlinear_params']['AVL_ind'], -45.7)
+        np.put(voltage_initcond, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], -74.99)
+        np.put(voltage_initcond, params_obj_neural['AVL_nonlinear_params']['AVL_ind'], -45.7)
         synaptic_initcond = 10**(-4)*np.random.normal(0, 0.94, params_obj_neural['N'])
 
         awa_initcond1 = np.zeros(params_obj_neural['N'],) 
-        np.put(awa_initcond1, params_obj_neural['inds'], 2.05e-7)
+        np.put(awa_initcond1, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 2.05e-7)
         awa_initcond2 = np.zeros(params_obj_neural['N'],)
-        np.put(awa_initcond2, params_obj_neural['inds'], 9.71e-6)
+        np.put(awa_initcond2, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 9.71e-6)
         awa_initcond3 = np.zeros(params_obj_neural['N'],)
-        np.put(awa_initcond3, params_obj_neural['inds'], 9.71e-6)
+        np.put(awa_initcond3, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 9.71e-6)
         awa_initcond4 = np.zeros(params_obj_neural['N'],)
-        np.put(awa_initcond4, params_obj_neural['inds'], 8.35e-7)
+        np.put(awa_initcond4, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 8.35e-7)
         awa_initcond5 = np.zeros(params_obj_neural['N'],)
-        np.put(awa_initcond5, params_obj_neural['inds'], 0.000151)
+        np.put(awa_initcond5, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 0.000151)
         awa_initcond6 = np.zeros(params_obj_neural['N'],)
-        np.put(awa_initcond6, params_obj_neural['inds'], 2.069e-9)
+        np.put(awa_initcond6, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 2.069e-9)
         awa_initcond7 = np.zeros(params_obj_neural['N'],)
-        np.put(awa_initcond7, params_obj_neural['inds'], 1.7e-10)
+        np.put(awa_initcond7, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], 1.7e-10)
 
         avl_initcond = np.zeros(params_obj_neural['N'] * 16,)
 
@@ -886,7 +874,7 @@ def infer_force_voltage(v_vec, muscle_map, muscle_map_pseudoinv):
 
 def membrane_voltageRHS_constinput(t, y):
 
-    Vvec, SVec = np.split(y, 2)
+    Vvec, SVec = np.split(y[:params_obj_neural['N']*2], 2)
 
     """ Gc(Vi - Ec) """
     VsubEc = np.multiply(params_obj_neural['Gc'], (Vvec - params_obj_neural['Ec']))
@@ -920,14 +908,14 @@ def membrane_voltageRHS_constinput(t, y):
 
         baseline_dict = {
 
-        "Vvec": Vvec,
-        "y": y,
-        "VsubEc": VsubEc,
-        "GapCon": GapCon,
-        "SynapCon": SynapCon,
-        "Input": Input,
-        "SynRise": SynRise,
-        "SynDrop": SynDrop
+        "Vvec": Vvec.copy(),
+        "y": y.copy(),
+        "VsubEc": VsubEc.copy(),
+        "GapCon": GapCon.copy(),
+        "SynapCon": SynapCon.copy(),
+        "Input": Input.copy(),
+        "SynRise": SynRise.copy(),
+        "SynDrop": SynDrop.copy()
 
         }
 
@@ -968,7 +956,7 @@ def compute_jacobian_constinput(t, y):
 
 def membrane_voltageRHS_dyninput(t, y):
 
-    Vvec, SVec = np.split(y, 2)
+    Vvec, SVec = np.split(y[:params_obj_neural['N']*2], 2)
 
     """ Gc(Vi - Ec) """
     VsubEc = np.multiply(params_obj_neural['Gc'], (Vvec - params_obj_neural['Ec']))
@@ -1006,14 +994,14 @@ def membrane_voltageRHS_dyninput(t, y):
 
         baseline_dict = {
 
-        "Vvec": Vvec,
-        "y": y,
-        "VsubEc": VsubEc,
-        "GapCon": GapCon,
-        "SynapCon": SynapCon,
-        "Input": Input,
-        "SynRise": SynRise,
-        "SynDrop": SynDrop
+        "Vvec": Vvec.copy(),
+        "y": y.copy(),
+        "VsubEc": VsubEc.copy(),
+        "GapCon": GapCon.copy(),
+        "SynapCon": SynapCon.copy(),
+        "Input": Input.copy(),
+        "SynRise": SynRise.copy(),
+        "SynDrop": SynDrop.copy()
 
         }
 
@@ -1057,7 +1045,7 @@ def compute_jacobian_dyninput(t, y):
 
 def membrane_voltageRHS_vext(t, y):
 
-    Vvec, SVec = np.split(y, 2)
+    Vvec, SVec = np.split(y[:params_obj_neural['N']*2], 2)
 
     v_ext = params_obj_neural['interpolate_voltage'](t)
     Vvec = np.add(Vvec, v_ext)
@@ -1098,14 +1086,14 @@ def membrane_voltageRHS_vext(t, y):
 
         baseline_dict = {
 
-        "Vvec": Vvec,
-        "y": y,
-        "VsubEc": VsubEc,
-        "GapCon": GapCon,
-        "SynapCon": SynapCon,
-        "Input": Input,
-        "SynRise": SynRise,
-        "SynDrop": SynDrop
+        "Vvec": Vvec.copy(),
+        "y": y.copy(),
+        "VsubEc": VsubEc.copy(),
+        "GapCon": GapCon.copy(),
+        "SynapCon": SynapCon.copy(),
+        "Input": Input.copy(),
+        "SynRise": SynRise.copy(),
+        "SynDrop": SynDrop.copy()
 
         }
 
@@ -1152,7 +1140,7 @@ def compute_jacobian_vext(t, y):
 
 def membrane_voltageRHS_fdb(t, y):
 
-    Vvec, SVec = np.split(y, 2)
+    Vvec, SVec = np.split(y[:params_obj_neural['N']*2], 2)
 
     if t > params_obj_neural['fdb_init']:
 
@@ -1199,14 +1187,14 @@ def membrane_voltageRHS_fdb(t, y):
 
         baseline_dict = {
 
-        "Vvec": Vvec,
-        "y": y,
-        "VsubEc": VsubEc,
-        "GapCon": GapCon,
-        "SynapCon": SynapCon,
-        "Input": Input,
-        "SynRise": SynRise,
-        "SynDrop": SynDrop
+        "Vvec": Vvec.copy(),
+        "y": y.copy(),
+        "VsubEc": VsubEc.copy(),
+        "GapCon": GapCon.copy(),
+        "SynapCon": SynapCon.copy(),
+        "Input": Input.copy(),
+        "SynRise": SynRise.copy(),
+        "SynDrop": SynDrop.copy()
 
         }
 
@@ -1260,7 +1248,7 @@ def compute_jacobian_fdb(t, y):
 
 def membrane_voltageRHS_fdb_vext(t, y):
 
-    Vvec, SVec = np.split(y, 2)
+    Vvec, SVec = np.split(y[:params_obj_neural['N']*2], 2)
     v_ext = params_obj_neural['interpolate_voltage'](t)
     Vvec = np.add(Vvec, v_ext)
 
@@ -1309,14 +1297,14 @@ def membrane_voltageRHS_fdb_vext(t, y):
 
         baseline_dict = {
 
-        "Vvec": Vvec,
-        "y": y,
-        "VsubEc": VsubEc,
-        "GapCon": GapCon,
-        "SynapCon": SynapCon,
-        "Input": Input,
-        "SynRise": SynRise,
-        "SynDrop": SynDrop
+        "Vvec": Vvec.copy(),
+        "y": y.copy(),
+        "VsubEc": VsubEc.copy(),
+        "GapCon": GapCon.copy(),
+        "SynapCon": SynapCon.copy(),
+        "Input": Input.copy(),
+        "SynRise": SynRise.copy(),
+        "SynDrop": SynDrop.copy()
 
         }
 
@@ -1372,7 +1360,7 @@ def compute_jacobian_fdb_vext(t, y):
 
 def membrane_voltageRHS_fdb_vext_spatialgrad(t, y):
 
-    Vvec, SVec = np.split(y, 2)
+    Vvec, SVec = np.split(y[:params_obj_neural['N']*2], 2)
     v_ext = params_obj_neural['interpolate_voltage'](t)
     Vvec = np.add(Vvec, v_ext)
 
@@ -1420,14 +1408,14 @@ def membrane_voltageRHS_fdb_vext_spatialgrad(t, y):
 
         baseline_dict = {
 
-        "Vvec": Vvec,
-        "y": y,
-        "VsubEc": VsubEc,
-        "GapCon": GapCon,
-        "SynapCon": SynapCon,
-        "Input": Input,
-        "SynRise": SynRise,
-        "SynDrop": SynDrop
+        "Vvec": Vvec.copy(),
+        "y": y.copy(),
+        "VsubEc": VsubEc.copy(),
+        "GapCon": GapCon.copy(),
+        "SynapCon": SynapCon.copy(),
+        "Input": Input.copy(),
+        "SynRise": SynRise.copy(),
+        "SynDrop": SynDrop.copy()
 
         }
 
@@ -1482,7 +1470,7 @@ def compute_jacobian_fdb_vext_spatialgrad(t, y):
 
 def membrane_voltageRHS_vext_spatialgrad(t, y):
 
-    Vvec, SVec = np.split(y, 2)
+    Vvec, SVec = np.split(y[:params_obj_neural['N']*2], 2)
 
     v_ext = params_obj_neural['interpolate_voltage'](t)
     Vvec = np.add(Vvec, v_ext)
@@ -1522,14 +1510,14 @@ def membrane_voltageRHS_vext_spatialgrad(t, y):
 
         baseline_dict = {
 
-        "Vvec": Vvec,
-        "y": y,
-        "VsubEc": VsubEc,
-        "GapCon": GapCon,
-        "SynapCon": SynapCon,
-        "Input": Input,
-        "SynRise": SynRise,
-        "SynDrop": SynDrop
+        "Vvec": Vvec.copy(),
+        "y": y.copy(),
+        "VsubEc": VsubEc.copy(),
+        "GapCon": GapCon.copy(),
+        "SynapCon": SynapCon.copy(),
+        "Input": Input.copy(),
+        "SynRise": SynRise.copy(),
+        "SynDrop": SynDrop.copy()
 
         }
 
@@ -1576,7 +1564,7 @@ def compute_jacobian_vext_spatialgrad(t, y):
 
 ########################## NON-LINEAR CURRENT #####################################################################################################################################################
 
-def AWA_nonlinear_current(AWA_dyn_vec): 
+def AWA_nonlinear_current(AWA_dyn_vec): # Incorporate leaky current
 
     AWA_dict = params_obj_neural['AWA_nonlinear_params']
 
@@ -1804,12 +1792,12 @@ def combine_baseline_nonlinear_currents(rhs_dict): # Needs to be simplified
 
         AWA_dyn_vec = np.concatenate([rhs_dict['Vvec'], rhs_dict['y'][params_obj_neural['N'] * 2:]])
         dAWA_dyn_vec = AWA_nonlinear_current(AWA_dyn_vec)
-        AWA_ind = params_obj_neural['AWA_nonlinear_params']['AWA_ind']
+        AWA_inds = params_obj_neural['AWA_nonlinear_params']['AWA_inds']
 
         dV = (-(rhs_dict['VsubEc'] + rhs_dict['GapCon'] + rhs_dict['SynapCon']) + rhs_dict['Input'])/params_obj_neural['C']
 
-        np.put(rhs_dict['VsubEc'], AWA_ind, .25*10*(rhs_dict['Vvec'][AWA_ind] - (-65)))
-        dV[AWA_ind] = (-(dAWA_dyn_vec[:params_obj_neural['N']][AWA_ind] + rhs_dict['VsubEc'][AWA_ind] + rhs_dict['GapCon'][AWA_ind] + rhs_dict['SynapCon'][AWA_ind]) + rhs_dict['Input'][AWA_ind])/params_obj_neural['C']
+        np.put(rhs_dict['VsubEc'], AWA_inds, .25*10*(rhs_dict['Vvec'][AWA_inds] - (-65)))
+        dV[AWA_inds] = (-(dAWA_dyn_vec[:params_obj_neural['N']][AWA_inds] + rhs_dict['VsubEc'][AWA_inds] + rhs_dict['GapCon'][AWA_inds] + rhs_dict['SynapCon'][AWA_inds]) + rhs_dict['Input'][AWA_inds])/params_obj_neural['C']
         dS = np.subtract(rhs_dict['SynRise'], rhs_dict['SynDrop'])
 
         return np.concatenate((dV, dS, dAWA_dyn_vec[params_obj_neural['N']:]))
@@ -1822,7 +1810,7 @@ def combine_baseline_nonlinear_currents(rhs_dict): # Needs to be simplified
 
         dV = (-(rhs_dict['VsubEc'] + rhs_dict['GapCon'] + rhs_dict['SynapCon']) + rhs_dict['Input'])/params_obj_neural['C']
 
-        dV[AVL_ind] = (-(dAVL_dyn_vec[:params_obj_neural['N']][AVL_ind] + rhs_dict['VsubEc'][AVL_ind] + rhs_dict['GapCon'][AVL_ind] + rhs_dict['SynapCon'][AVL_ind]) + rhs_dict['Input'][AVL_ind])/params_obj_neural['AVL_nonlinear_params']['C_AVL']
+        dV[AVL_ind] = (-(dAVL_dyn_vec[:params_obj_neural['N']][AVL_ind] + rhs_dict['GapCon'][AVL_ind] + rhs_dict['SynapCon'][AVL_ind]) + rhs_dict['Input'][AVL_ind])/params_obj_neural['AVL_nonlinear_params']['C_AVL']
         dS = np.subtract(rhs_dict['SynRise'], rhs_dict['SynDrop'])
 
         return np.concatenate((dV, dS, dAVL_dyn_vec[params_obj_neural['N']:]))
@@ -1834,13 +1822,13 @@ def combine_baseline_nonlinear_currents(rhs_dict): # Needs to be simplified
 
         dAWA_dyn_vec = AWA_nonlinear_current(AWA_dyn_vec)
         dAVL_dyn_vec = AVL_nonlinear_current(AVL_dyn_vec)
-        AWA_ind = params_obj_neural['AWA_nonlinear_params']['AWA_ind']
+        AWA_inds = params_obj_neural['AWA_nonlinear_params']['AWA_inds']
         AVL_ind = params_obj_neural['AVL_nonlinear_params']['AVL_ind']
 
         dV = (-(rhs_dict['VsubEc'] + rhs_dict['GapCon'] + rhs_dict['SynapCon']) + rhs_dict['Input'])/params_obj_neural['C']
 
-        np.put(rhs_dict['VsubEc'], AWA_ind, .25*10*(rhs_dict['Vvec'][AWA_ind] - (-65)))
-        dV[AWA_ind] = (-(dAWA_dyn_vec[:params_obj_neural['N']][AWA_ind] + rhs_dict['VsubEc'][AWA_ind] + rhs_dict['GapCon'][AWA_ind] + rhs_dict['SynapCon'][AWA_ind]) + rhs_dict['Input'][AWA_ind])/params_obj_neural['C']
+        np.put(rhs_dict['VsubEc'], AWA_inds, .25*10*(rhs_dict['Vvec'][AWA_inds] - (-65)))
+        dV[AWA_inds] = (-(dAWA_dyn_vec[:params_obj_neural['N']][AWA_inds] + rhs_dict['VsubEc'][AWA_inds] + rhs_dict['GapCon'][AWA_inds] + rhs_dict['SynapCon'][AWA_inds]) + rhs_dict['Input'][AWA_inds])/params_obj_neural['C']
         dV[AVL_ind] = (-(dAVL_dyn_vec[:params_obj_neural['N']][AVL_ind] + rhs_dict['VsubEc'][AVL_ind] + rhs_dict['GapCon'][AVL_ind] + rhs_dict['SynapCon'][AVL_ind]) + rhs_dict['Input'][AVL_ind])/params_obj_neural['AVL_nonlinear_params']['C_AVL']
         dS = np.subtract(rhs_dict['SynRise'], rhs_dict['SynDrop'])
 

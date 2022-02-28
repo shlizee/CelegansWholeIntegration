@@ -60,14 +60,14 @@ higher_fluid_density_default = {
     "musclesType" : 'GABA',
     "scaled_factor" : 6000., #default 2200, 1130 (for 70000), 1230 (for 90000) #Muscle activity scaling
     "segments_count" : 24,
-    "E" : 600000., #default 178000, 171000, 70000, 90000, #Young's modulus/flexural rigidity, Experimental measurment showed 4000
-    "damping" : 0, #Force damping
-    "rho" : 2, #default = 1, 7 for E = 70000, 10 for E = 90000 #Volumetric material density
-    "rho_f" : 2, #default = 10 #Fluid density 
-    "mu" : 0.01, #default = 0.01 #Viscosity #0.001 - 0.012
-    "a" : 0.325 * h_compute, #Crossectional radius
-    "alpha" : 1, #dimensionless body scaler
-    "C_N" : 2, #default = 2 #Drag coefficient
+    "E" : 600000., # default 178000, 171000, 70000, 90000, #Young's modulus/flexural rigidity, Experimental measurment showed 4000
+    "damping" : 0, # Force damping
+    "rho" : 2, # default = 1, 7 for E = 70000, 10 for E = 90000 # Volumetric material density
+    "rho_f" : 2, # default = 10 # Fluid density 
+    "mu" : 0.01, # default = 0.01 # Viscosity #0.001 - 0.012
+    "a" : 0.325 * h_compute, #C rossectional radius
+    "alpha" : 1, # dimensionless body scaler
+    "C_N" : 2, # default = 2 # Drag coefficient
     "dt" : 0.01,
     "c1" : 6*10,
     "c2" : 0.2*(10**2),

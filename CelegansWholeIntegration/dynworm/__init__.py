@@ -3,23 +3,23 @@
 # Model Components ##########################################################################################################
 ##### 1. Nervous System Simulation																		                    # 
 		# a. Nembrane voltage simulation to Dynamic Stimuli (Leaky membrane + Gap + Synaptic + External stimulus)	        #
-		# b. Resting potential (Vth) computation via network-wise fixed point computation								    #
+		# b. Resting potential (Vth) computation via network-wise fixed point computation									#
 		# c. Simulation with External Forcing															                    #
-		# d. Simulation with Proprioceptive Feedback													                    #
+		# d. Simulation with Proprioceptive Feedback 													                    #
 ##### 2. Muscle Force Simulation																	                        #
 		# a. Neurons' voltages to Muscle Activity													                        #
-		# b. Muscle Activity to Calcium dynamics												                            #
+		# b. Muscle Activity to Calcium dynamics														                    #
 		# c. Calcium dynamics to Force                                									                    #
 ##### 3. Body Posture Simulation																		                    #
-		# a. Forces to dynamic body postures using fluid equation                                                           # 
+		# a. Forces to dynamic body postures using fluid equation *** (Needs to be re-written in Julia)                     # 
 #############################################################################################################################
 
 # Computation layers  #######################################################################################################
-# 1. Gap Junction Adjacency Matrix                            (279 * 279)
-# 2. Synaptic Adjacency Matrix                                (279 * 279)
-# 3. Excitatory/Inhibitory Map (Glutamate, Choline, GABA)     (279 * 279)          
-# 4. Ion Channels                                                                  (AWA and AVL)
-# 5. Extra-synaptic                                           (279 * 279)          (Planned)
+# 1. Gap Junction Adjacency Matrix                            (279 * 279)                                                   #
+# 2. Synaptic Adjacency Matrix                                (279 * 279)                                                   #
+# 3. Excitatory/Inhibitory Map (Glutamate, Choline, GABA)     (279 * 279)                                                   #
+# 4. Ion Channels                                                                  (AWA and AVL neurons)                    #
+# 5. Extra-synaptic                                           (279 * 279)          (Planned)                                #
 #############################################################################################################################
 
 __author__ = 'Jimin Kim: jk55@u.washington.edu'

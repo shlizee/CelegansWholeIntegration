@@ -21,7 +21,6 @@ if platform == 'Windows':
     muscle_map_dir = main_dir + '\muscle_maps'
     inputmat_dir = main_dir + '\presets_input'
     voltagemat_dir = main_dir + '\presets_voltage'
-    mldata_dir = main_dir + '\ml_data'
     vids_dir = default_dir + '\created_vids'
 
 else:
@@ -32,5 +31,4 @@ else:
     muscle_map_dir = main_dir + '/muscle_maps'
     inputmat_dir = main_dir + '/presets_input'
     voltagemat_dir = main_dir + '/presets_voltage'
-    mldata_dir = main_dir + '/ml_data'
     vids_dir = default_dir + '/created_vids'
