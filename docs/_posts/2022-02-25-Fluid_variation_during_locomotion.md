@@ -8,4 +8,4 @@ Experiments indicate that the environment plays a significant role in shaping co
 
 #### Changing fluid viscosity from agar (control) to water (low viscosity) - Experiment (Left), Model (Right)
 
-<iframe width="450" height="400" src="/CelegansWholeIntegration/media/fluid_variation_exp.mp4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="336" height="188" src="" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   <iframe width="336" height="188" src="" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
