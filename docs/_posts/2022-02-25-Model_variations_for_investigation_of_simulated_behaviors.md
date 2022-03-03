@@ -19,14 +19,19 @@ The model variations we consider are i) Tyramine gated chloride channels (LGC-55
 
 Above figure describes the comparison of in-vivo eigenworm coefficients compared with baseline model coefficients versus the model with each variation of the baseline. 
 
-For incorporation of LGC-55, we observe that coefficients for both FWD and BWD locomotion almost do not change from the baseline values. This is indeed expected since LGC-55 was found to be primarily associated with head turning behavior during pirouette maneuver, e.g., omega turn, rather than forward locomotion. 
+**For incorporation of LGC-55**, we observe that coefficients for both FWD and BWD locomotion almost do not change from the baseline values. This is indeed expected since LGC-55 was found to be primarily associated with head turning behavior during pirouette maneuver, e.g., omega turn, rather than forward locomotion. 
 
-Model variation (ii) with selected neurons’ having nonlinear channels, appears to have an effect on the eigenworm coefficients. However, the error between in-vivo coefficients and model variant generated coefficients is greater than the baseline model error, primarily due to the first eigenworm coefficient. We found that this effect mostly originates from incorporation of AVL since including non-linear channels in AWA alone did not have noticeable effects on the baseline coefficients. 
+**Model variation (ii) with selected neurons’ having nonlinear channels**, appears to have an effect on the eigenworm coefficients. However, the error between in-vivo coefficients and model variant generated coefficients is greater than the baseline model error, primarily due to the first eigenworm coefficient. We found that this effect mostly originates from incorporation of AVL since including non-linear channels in AWA alone did not have noticeable effects on the baseline coefficients. 
 
-Updating the connectome data (both gap and synaptic) to the dataset published in Cook et al, variation (iii), significantly decreased the error between the variant model and in-vivo coefficients. Especially the in-vivo coefficients were within the confidence interval (P = 99%) of model obtained coefficients for BWD locomotion, indicating a close match. 
+**Updating the connectome data (both gap and synaptic)** to the dataset published in Cook et al, variation (iii), significantly decreased the error between the variant model and in-vivo coefficients. Especially the in-vivo coefficients were within the confidence interval (P = 99%) of model obtained coefficients for BWD locomotion, indicating a close match. 
 
-Combining all three variations further minimized the error for FWD locomotion, but slightly increased the error for BWD locomotion. These results show that variations of the baseline model allow to further study the effects of new biophysical data on locomotion and quantify the contribution of each to match observed in-vivo behaviors. 
+**Combining all three variations** further minimized the error for FWD locomotion, but slightly increased the error for BWD locomotion. 
 
+Let's take a look at simulated behaviors after model variation. Here we show the simulated locomotion after updating connectome, the variation (iii) that resulted in most significant improvement to eigenworm coefficients, and compare to baseline locomotion.
 
+<iframe width="225" height="225" src="/CelegansWholeIntegration/media/baseline_fwd.mp4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   <iframe width="225" height="225" src="/CelegansWholeIntegration/media/connectome_var_fwd.mp4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   
+<iframe width="225" height="225" src="/CelegansWholeIntegration/media/baseline_bwd.mp4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   <iframe width="225" height="225" src="/CelegansWholeIntegration/media/connectome_var_bwd.mp4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   
+(Top Left: FWD locomotion (baseline), Top Right: FWD locomotion (update connectome), Bottom Left: BWD locomotion (baseline), Bottom Right: BWD locomotion (update connectome))
 
+As shown above, we can see that both FWD and BWD locomotion achieves more 'sine-shaped' postures with update connectome, and hence makes the movement look more 'natural'. These results show that variations of the baseline model allow to further study the effects of new biophysical data on locomotion and quantify the contribution of each to match observed in-vivo behaviors. 
 
