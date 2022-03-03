@@ -11,6 +11,8 @@ In this post, we link neural stimulation with feedback to examine mechanical tou
 
 Here we validate movements that the baseline model generates for gentle and harsh anterior/posterior touch and examine scenarios afterwards the effect of in-silico ablation on them. For gentle anterior/posterior touch, we stimulate ALM,AVM and PLM respectively. For harsh anterior/posterior touch, we stimulate FLP, ADE, BDU, SDQR and PVD, PDE respectively.
 
+<!--more-->
+
 <iframe width="225" height="225" src="/CelegansWholeIntegration/media/gentle_anterior.mp4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   <iframe width="225" height="225" src="/CelegansWholeIntegration/media/harsh_anterior.mp4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>   <iframe width="225" height="225" src="/CelegansWholeIntegration/media/harsh_posterior.mp4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 (Left: Gentle Anterior Touch, Middle: Harsh Anterior Touch, Right: Harsh Posterior Touch)
 

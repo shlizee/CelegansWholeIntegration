@@ -11,6 +11,8 @@ In this post we consider expandibility of the baseline model to investigate simu
 
 As shown above, we see that there is a clear gap between the model obtained coefficients (black) and experiment (blue). This is unsurprising since the baseline model, by design, includes only “baseline” layers of individual neural dynamics and connections to reflect the dominant dynamic patterns and behavior. Novel experimental data shows that there are additional “higher order” properties that play role in neural activity and behavior such as spiking neurons, extra-synaptic connections, novel connectomics data. We incorporate these additional layers to the model to investigate their effects on simulated locomotion.
 
+<!--more-->
+
 ![Model additions](/CelegansWholeIntegration/media/model_additions.png)
 
 The model variations we consider are i) Tyramine gated chloride channels (LGC-55), ii) neurons with non-linear channels and iii) variation of the connectome. Each of these variations was recently proposed in experiments to have a potential role in facilitating or regulating locomotion. Adding the three variations to the baseline model can be done by either **adding new interaction channels** (LGC-55), or **modifying the weight matrices** that define the connectome, or by **adding new individual neuron channels** (non-linear channels). Since the model is designed to be easily configurable and expandable, such additions can be inserted or ablated from the baseline model with ease. 
