@@ -4,6 +4,8 @@ excerpt_separator: <!--more-->
 title: A worm in a box? Triggering sharp turns with RIV pulses
 ---
 
+<!--more-->
+
 #### Sharp Ventral Turns: forward locomotion is interrupted by RIV stimulus
 
 RIV motorneurons synapse onto ventral neck muscles and have been associated with the execution of sharp ventral head bend. A **COOL** demo of this is an in-vivo scenario by [Alkema lab](https://www.umassmed.edu/AlkemaLab/) showing that they can confine _C. elegans_ in a rectangular region by stimulating RIV each time the worm reaches the boundary of that region. 

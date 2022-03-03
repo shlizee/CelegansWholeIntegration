@@ -4,6 +4,8 @@ excerpt_separator: <!--more-->
 title: Model variations for investigation of simulated behaviors
 ---
 
+<!--more-->
+
 In this post we consider expandibility of the baseline model to investigate simulated behaviors. The baseline model has shown its ability to generate overall similar movements as in in-vivo experiments and to provide novel predictions. However, in depth analysis of motion shows that the characteristics of locomotion, such as eigenworm coefficients, do not precisely coincide with in-vivo values. Eigenworm coefficients are quantitative metrics describing the C. elegans posture during typical locomotion and are used here to evaluate the closeness of the simulated locomotion compared to in-vivo locomotion.
 
 ![Baseline eigenworm discrepancy](/CelegansWholeIntegration/media/eigenworm_discrepancy.png)

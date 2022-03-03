@@ -4,6 +4,8 @@ excerpt_separator: <!--more-->
 title: Changing locomotion direction through additional pulses of neural stimuli (Avoidance)
 ---
 
+<!--more-->
+
 Once we have generated **baseline forward and backward** locomotion movement with **_CelegansWholeIntegration_** we explore the effects of stimulating additional neurons (with short pulses) during locomotion. First scenarios that we explored are neural triggers identified experimentally to change the course of movement. In this post we describe the avoidance pulse: stimulation of ALM + AVM.
 
 #### Avoidance: forward locomotion is interrupted by ALM+AVM stimulus
