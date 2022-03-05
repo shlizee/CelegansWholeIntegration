@@ -5,7 +5,7 @@ title: About C. elegans Whole Integration
 
 # _CelegansWholeIntegration_ project
 
-_CelegansWholeIntegration_ project introduces a novel and one of a kind model to computationally emulate the whole somatic nervous system and its response to stimuli, and connect it with body dynamics for the nematode Caenorhabditis elegans (C. elegans). 
+_CelegansWholeIntegration_ project introduces a novel and one of a kind model to computationally emulate the whole somatic nervous system and its response to stimuli, and connect it with body dynamics for the nematode _Caenorhabditis elegans_ (_C. elegans_). 
 The model incorporates the full anatomical wiring diagram, somatic connectome, intracellular and extracellular neural dynamics. The model includes layers which translate neural activity to muscle forces and muscle impulses to body postures. 
 In addition, it implements inverse integration which modulates neural dynamics according to external forces on the body. 
 We test the model by comparing outcomes of body dynamics with in vivo experiments of the touch response and implement ablations found effective in those experiments. 
