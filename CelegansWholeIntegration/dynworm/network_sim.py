@@ -64,7 +64,7 @@ def validate_custom_neural_params(custom_baseline_params):
 
     key_checker = []
 
-    for key in n_params.default_baseline.keys():
+    for key in n_params.pA_unit_baseline.keys():
         
         key_checker.append(key in custom_baseline_params)
 

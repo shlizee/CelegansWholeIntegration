@@ -53,8 +53,9 @@ ad: Synaptic activity's decay time (5/1.5)
 B: Width of the sigmoid (0.125mv^-1)
 rate: Rate for continuous stimuli transition
 offset: Offset for continuous stimuli transition
-init_fdb: Timepoint in seconds in which feedback initiates
-t_delay: Time delay in seconds for the feedback 
+iext: input stimulus current amplitude scaler (use 10 for pA units)
+nonlinear_AWA: whether the simulation will incorporate nonlinear channels for AWA
+nonlinear_AVL: whether the simulation will incorporate nonlinear channels for AVL
 """
 
 init_key_counts = 15

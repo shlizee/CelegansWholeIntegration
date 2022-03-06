@@ -31,4 +31,5 @@ from dynworm import body_params
 from dynworm import neurons_idx 
 from dynworm import network_sim 
 from dynworm import body_sim
+#from dynworm import spatialgrad_sim
 from dynworm import plotting
