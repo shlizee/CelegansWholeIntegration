@@ -4,8 +4,6 @@ excerpt_separator: <!--more-->
 title: Case study of the touch response
 ---
 
-<!--more-->
-
 In this post, we link neural stimulation with feedback to examine mechanical touch induced locomotion responses. _C. elegans_ responds to both gentle and harsh mechanical touches to its body via activating escape responses. If the touch is around anterior body region, it responds with backward locomotion whereas for posterior touch, it responds with forward locomotion. Theese responses are mediated by a group of sensory neurons distributed in both posterior and anterior body regions as shown below.
 
 ![Mechanosensors](/CelegansWholeIntegration/media/mechanosensors.png)

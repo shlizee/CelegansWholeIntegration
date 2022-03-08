@@ -4,8 +4,6 @@ excerpt_separator: <!--more-->
 title: Generating baseline locomotion - forward and backward
 ---
 
-<!--more-->
-
 First movements that we generate with **_CelegansWholeIntegration_** are **baseline forward and backward** locomotion movements. These movements are similar in shape to translating sinusoidals. The video below was recorded in an experimental lab and demonstrates the body postures involved:  
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/olrkWpCqVCE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
