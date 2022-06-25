@@ -22,14 +22,17 @@
 # 5. Extra-synaptic                                           (279 * 279)          (Planned)                                #
 #############################################################################################################################
 
+# TO BE ARRANGED
+
 __author__ = 'Jimin Kim: jk55@u.washington.edu'
 __version__ = '0.1.0'
 
-from dynworm import sys_paths 
-from dynworm import neural_params
-from dynworm import body_params 
-from dynworm import neurons_idx 
-from dynworm import network_sim 
-from dynworm import body_sim
-#from dynworm import spatialgrad_sim
-from dynworm import plotting
+from dynworm import sys_paths # Handles working directory for different OS
+from dynworm import neural_params # Contains connectomes + physiological parameters used for neural simulations
+from dynworm import body_params # Contains body/surrounding liquid parameters used for body simulations
+from dynworm import neurons_idx # Set of pre-defined indices for different neuron groups 
+from dynworm import network_sim # Handles neural simulations
+from dynworm import body_sim # Handles body simulations
+#from dynworm import spatialgrad_sim # Real time simulations of environmental interactions. This code is confidential for now.
+from dynworm import plotting # Suite of plotting functions
+from dynworm import utils # Suite of various utility functions
