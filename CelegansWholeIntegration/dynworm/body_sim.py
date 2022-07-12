@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 from dynworm import sys_paths as paths
+from dynworm import network_sim as n_sim
 from dynworm import body_params as b_params
 from IPython.display import clear_output
 import time
@@ -139,9 +140,9 @@ def produce_animation(x, y, filename, xmin, xmax, ymin, ymax, figsize_x, figsize
 
         """ Progress tracking """
 
-        if i % 100 == 0:
+        if i % fps == 0:
 
-            print("animated timepoint: " + str(i / 100) + " seconds")
+            print("animated timepoint: " + str(i / fps) + " seconds")
 
         elif i == len(x)-1:
 
@@ -406,16 +407,17 @@ def solve_bodymodel(result_dict_network, xinit = 0, yinit = 0, orientation_angle
 
         params_obj_body['kappa_forcing'] = np.zeros(23)
 
+    time_scale_conversion = int(n_sim.params_obj_neural['time_scaler']/params_obj_body['time_scaler'])
+
+    downsampled_v_sol = result_dict_network['v_solution'][::time_scale_conversion]
+
     params_obj_body['t0'] = 0
-    params_obj_body['tf'] = (len(result_dict_network['v_solution']) - 1) * params_obj_body['dt']
+    params_obj_body['tf'] = (len(downsampled_v_sol) - 1) * params_obj_body['dt']
 
     t0 = params_obj_body['t0']
     tf = params_obj_body['tf']
-    dt_network = result_dict_network['dt']
-    dt_body = params_obj_body['dt']
 
-    nsteps_network = int(np.floor((tf - t0)/dt_network) + 1)
-    nsteps_body = int(np.floor((tf - t0)/dt_body) + 1) # Identical to len(v_solution)
+    nsteps_body = int(np.floor((tf - t0)/params_obj_body['dt']) + 1) # Identical to len(v_solution)
     params_obj_body['nsteps_body'] = nsteps_body
 
     """ SET UP FORCE INTERPOLATE """
@@ -461,7 +463,7 @@ def solve_bodymodel(result_dict_network, xinit = 0, yinit = 0, orientation_angle
 
     while r.successful() and k < params_obj_body['nsteps_body']:
 
-        r.integrate(r.t + dt_body)
+        r.integrate(r.t + params_obj_body['dt'])
 
         t[k] = r.t
         Traj[k, :] = r.y
@@ -598,7 +600,6 @@ def muscle_activity_2_calcium(stacked_force):
 
     stacked_force_interpolate = interpolate.interp1d(params_obj_body['timepoints_body'], stacked_force, axis=0, kind = 'nearest', fill_value = "extrapolate")
     params_obj_body['stacked_force_interpolate'] = stacked_force_interpolate
-    dt_body = params_obj_body['dt']
 
     muscle_count = len(stacked_force[0, :])
     calcium_init = np.zeros(muscle_count * 4)
@@ -615,7 +616,7 @@ def muscle_activity_2_calcium(stacked_force):
 
     while r_calcium.successful() and k < params_obj_body['nsteps_body']:
 
-        r_calcium.integrate(r_calcium.t + dt_body)
+        r_calcium.integrate(r_calcium.t + params_obj_body['dt'])
 
         calcium_traj[k, :] = r_calcium.y
 

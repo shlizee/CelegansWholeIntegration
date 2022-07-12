@@ -31,7 +31,9 @@ def load_Json(filename):
 
     return content
 
-def construct_dyn_inputmat(t0, tf, input_type, neuron_indices, dt = 0.01, normalized_amps = False, freqs = False, noise_amplitudes = False, step_time_interval = False):
+def construct_dyn_inputmat(t0, tf, input_type, neuron_indices, normalized_amps = False, freqs = False, noise_amplitudes = False, step_time_interval = False):
+
+    dt = n_params.pA_unit_baseline['dt']/n_params.pA_unit_baseline['time_scaler']
 
     timepoints = np.arange(t0, tf, dt)
     input_mat = np.zeros((len(timepoints) + 1, n_params.pA_unit_baseline['N']))

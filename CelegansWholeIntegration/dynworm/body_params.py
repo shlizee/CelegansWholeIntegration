@@ -68,7 +68,8 @@ higher_fluid_density_default = {
     "a" : 0.325 * h_compute, #C rossectional radius
     "alpha" : 1, # dimensionless body scaler
     "C_N" : 2, # default = 2 # Drag coefficient
-    "dt" : 0.01,
+    "dt" : 0.01, # 1 = 1s
+    "time_scaler": 1,
     "c1" : 6*10,
     "c2" : 0.2*(10**2),
     "c3" : 0.5*(10**2),
