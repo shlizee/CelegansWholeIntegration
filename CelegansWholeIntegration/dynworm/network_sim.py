@@ -237,7 +237,7 @@ def run_network_dyninput(input_mat, ablation_mask, \
 
     else:
 
-        r = integrate.ode(membrane_voltageRHS_dyninput).set_integrator('vode', method = 'bdf', first_step = 0.1, nsteps = 10000000, with_jacobian = True)
+        r = integrate.ode(membrane_voltageRHS_dyninput).set_integrator('vode', method = 'bdf', first_step = 0.1, nsteps = 10000000, with_jacobian = True, rtol = 1e-8, atol = 1e-8)
 
     r.set_initial_value(initcond, t0)
 
