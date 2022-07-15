@@ -11,21 +11,21 @@
 		# b. Muscle Activity to Calcium dynamics														                    #
 		# c. Calcium dynamics to Force                                									                    #
 ##### 3. Body Posture Simulation																		                    #
-		# a. Forces to dynamic body postures using fluid equation *** (Needs to be re-written in Julia)                     # 
+		# a. Forces to dynamic body postures using fluid equation                     # 
 #############################################################################################################################
 
 # Computation layers  #######################################################################################################
 # 1. Gap Junction Adjacency Matrix                            (279 * 279)                                                   #
 # 2. Synaptic Adjacency Matrix                                (279 * 279)                                                   #
 # 3. Excitatory/Inhibitory Map (Glutamate, Choline, GABA)     (279 * 279)                                                   #
-# 4. Ion Channels                                                                  (AWA and AVL neurons)                    #
+# 4. Ion Channels                                             (AWA and AVL neurons)(Uses Julia to solve)                    #
 # 5. Extra-synaptic                                           (279 * 279)          (Planned)                                #
 #############################################################################################################################
 
-# TO BE ARRANGED
+# TODO: USE JULIA INTEGRATOR FOR NON-LINEAR SIMULATIONS + BODY
 
 __author__ = 'Jimin Kim: jk55@u.washington.edu'
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 from dynworm import sys_paths # Handles working directory for different OS
 from dynworm import neural_params # Contains connectomes + physiological parameters used for neural simulations

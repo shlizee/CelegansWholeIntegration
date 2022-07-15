@@ -21,6 +21,7 @@ from dynworm import network_sim as n_sim
 from dynworm import body_params as b_params
 from IPython.display import clear_output
 import time
+from diffeqpy import de, ode 
 
 np.random.seed(10)
 
@@ -381,7 +382,8 @@ def produce_animation_swarm(x_list, y_list, filename, xmin, xmax, ymin, ymax, fi
 def solve_bodymodel(result_dict_network, xinit = 0, yinit = 0, orientation_angle = 0, custom_y_init = False, \
     kappa_scaling = 1, kappa_forcing = False, \
     use_simplified_calcium = True, custom_muscle_map = False, custom_force = False, return_steps_only = False, return_kappa_only = False, 
-    xmin = -120, xmax = 80, ymin = -100, ymax = 100):
+    xmin = -120, xmax = 80, ymin = -100, ymax = 100,
+    use_julia_engine = False):
 
     # ACCEPT ANOTHER DICT OBJECT WITH BODY SIM CONFIGS
 
@@ -442,39 +444,53 @@ def solve_bodymodel(result_dict_network, xinit = 0, yinit = 0, orientation_angle
     InitCond = params_obj_body['IC']
     N = len(InitCond)
 
-    progress_milestones = np.linspace(0, params_obj_body['nsteps_body'], 10).astype('int')
+    if use_julia_engine:
 
-    """ Configuring the ODE Solver """
-    r = integrate.ode(visco_elastic_rod_rhs).set_integrator('dopri5', rtol = 10e-5, atol = 10e-5, max_step = 0.001)
-    r.set_initial_value(InitCond, t0)
+        print("Computing body movements using Julia engine...")
 
-    """ Additional Python step to store the trajectories """
-    t = np.zeros(params_obj_body['nsteps_body'])
-    Traj = np.zeros((params_obj_body['nsteps_body'], N))
+        r = de.ODEProblem(visco_elastic_rod_rhs_julia, InitCond, (0, tf))
+        sol = de.solve(r, ode.BS5(), saveat = params_obj_body['dt'], reltol = 10e-5, abstol = 10e-5, save_everystep = False)
 
-    t[0] = t0
-    Traj[0, :] = InitCond[:N]
+        t = sol.t
+        Traj = np.vstack(sol.u)
 
-    """ Integrate the ODE(s) across each delta_t timestep """
+        x, y = solve_xy(Traj[:, 0], Traj[:, 1], Traj[:, 2:26])
 
-    print("Computing body movements...")
+    else:
 
-    k = 1
+        progress_milestones = np.linspace(0, params_obj_body['nsteps_body'], 10).astype('int')
 
-    while r.successful() and k < params_obj_body['nsteps_body']:
+        """ Configuring the ODE Solver """
+        r = integrate.ode(visco_elastic_rod_rhs).set_integrator('dopri5', rtol = 10e-5, atol = 10e-5, max_step = 0.001)
+        r.set_initial_value(InitCond, t0)
 
-        r.integrate(r.t + params_obj_body['dt'])
+        """ Additional Python step to store the trajectories """
+        t = np.zeros(params_obj_body['nsteps_body'])
+        Traj = np.zeros((params_obj_body['nsteps_body'], N))
 
-        t[k] = r.t
-        Traj[k, :] = r.y
+        t[0] = t0
+        Traj[0, :] = InitCond[:N]
 
-        k += 1
+        """ Integrate the ODE(s) across each delta_t timestep """
 
-        if k in progress_milestones:
+        print("Computing body movements...")
 
-            print(str(np.round((float(k) / params_obj_body['nsteps_body']) * 100, 1)) + '% ' + 'completed')
+        k = 1
 
-    x, y = solve_xy(Traj[:, 0], Traj[:, 1], Traj[:, 2:26])
+        while r.successful() and k < params_obj_body['nsteps_body']:
+
+            r.integrate(r.t + params_obj_body['dt'])
+
+            t[k] = r.t
+            Traj[k, :] = r.y
+
+            k += 1
+
+            if k in progress_milestones:
+
+                print(str(np.round((float(k) / params_obj_body['nsteps_body']) * 100, 1)) + '% ' + 'completed')
+
+        x, y = solve_xy(Traj[:, 0], Traj[:, 1], Traj[:, 2:26])
     
     print("Post-processing the simulated body...")
     x_post, y_post = postprocess_xy(x, y)
@@ -993,6 +1009,168 @@ def visco_elastic_rod_rhs(t, y):
     output_final = np.concatenate([output_dot, output_ddot])
 
     return output_final
+
+def visco_elastic_rod_rhs_julia(dy, y, p, t):
+
+    """ Unpack y """
+
+    xyphi, xyphi_dot = np.split(y, 2)
+
+    x1 = xyphi[0]
+    y1 = xyphi[1]
+    phi = xyphi[2:]
+
+    xdot1 = xyphi_dot[0]
+    ydot1 = xyphi_dot[1]
+    phidot = xyphi_dot[2:]
+
+    """ Empty arrays for x, y, x_dot, ydot """
+
+    xvec = np.zeros(params_obj_body['segments_count'])
+    yvec = np.zeros(params_obj_body['segments_count'])
+    xdot = np.zeros(params_obj_body['segments_count'])
+    ydot = np.zeros(params_obj_body['segments_count'])
+
+    """ Populate x, y, x_dot, y_dot """
+
+    xvec[0] = x1
+    yvec[0] = y1
+    xdot[0] = xdot1
+    ydot[0] = ydot1
+
+    for j in np.arange(1, len(xvec)):
+
+        j_ = j - 1
+
+        xvec[j] = xvec[j_] + (params_obj_body['h'][j] / 2.) * (np.cos(phi[j_]) + np.cos(phi[j]))
+        yvec[j] = yvec[j_] + (params_obj_body['h'][j] / 2.) * (np.sin(phi[j_]) + np.sin(phi[j]))
+        xdot[j] = xdot[j_] - (params_obj_body['h'][j] / 2.) * (np.sin(phi[j_]) * phidot[j_] + np.sin(phi[j]) * phidot[j])
+        ydot[j] = ydot[j_] + (params_obj_body['h'][j] / 2.) * (np.cos(phi[j_]) * phidot[j_] + np.cos(phi[j]) * phidot[j])
+
+    """ Mapping t -> Left and right forces, or Ventral and dorsal forces """
+    """ rounding to integer method"""
+
+    t_int = np.max([1, int(np.round(t / params_obj_body['dt']))])
+
+    """ interpoloate method """
+
+    fR = params_obj_body['interpolate_force'](t)[:params_obj_body['segments_count']-1]
+    fL = params_obj_body['interpolate_force'](t)[params_obj_body['segments_count']:-1]
+
+    """ Computing velocity of local body movement """
+
+    v_tan_norm_0 = np.multiply(np.cos(phi), xdot) + np.multiply(np.sin(phi), ydot)
+    v_tan_norm_1 = np.multiply(-1 * np.sin(phi), xdot) + np.multiply(np.cos(phi), ydot)
+
+    v_tan_norm = np.concatenate([v_tan_norm_0, v_tan_norm_1])
+    v_tan = v_tan_norm[:params_obj_body['segments_count']]
+    v_norm = v_tan_norm[params_obj_body['segments_count']:]
+
+    """ Compute curvature k """
+
+    k = np.divide(4 * (fR - fL) * params_obj_body['w'][:-1], np.subtract(8 * params_obj_body['v'][:-1] * params_obj_body['w'][:-1]**2, np.multiply(fR + fL, np.power(params_obj_body['h'][:-1], 2))))
+
+    """ curvature scaling """
+    k = np.multiply(k, params_obj_body['kappa_scaling'])
+    k = k + params_obj_body['kappa_forcing']
+
+    params_obj_body['kappa'][t_int, :] = k
+
+    """ Phi_diff and phidot_diff """
+
+    phi_diff = phi[1:] - phi[:-1]
+    phi_dot_diff = phidot[1:] - phidot[:-1]
+
+    """ Contact moment """
+
+    M = np.zeros(params_obj_body['segments_count'])
+    M[:-1] = params_obj_body['EI'][:-1] * (phi_diff - k) + (2 * params_obj_body['b'][:-1]**2 * params_obj_body['damping']) * np.divide(phi_dot_diff, params_obj_body['h'][:-1])
+    Mdiff = np.append(M[0], np.diff(M))
+
+    """ Second derivative computation """
+
+    Hh_mat = np.diag(params_obj_body['h']) + np.diag(params_obj_body['h'][1:], 1)
+    Gh_mat = np.diag(params_obj_body['h']) + np.diag(params_obj_body['h'][1:], -1)
+    Gcos = np.multiply(Gh_mat / 2., Gmat(np.cos(phi)))
+    Gsin = np.multiply(Gh_mat / 2., Gmat(np.sin(phi)))
+    Hcos = np.multiply(Hh_mat / 2., Hmat(np.cos(phi)))
+    Hsin = np.multiply(Hh_mat / 2., Hmat(np.sin(phi)))
+
+    """ Normal force """
+
+    F_N0 = np.multiply(params_obj_body['a'] * params_obj_body['rho_f'] * params_obj_body['C_N'] * np.abs(v_norm), v_norm)
+    F_N1 = np.multiply(np.sqrt(8 * params_obj_body['rho_f'] * params_obj_body['a'] * params_obj_body['mu'] * np.abs(v_norm)), v_norm)
+    F_N = np.add(F_N0, F_N1)
+
+    """ Tan force """
+
+    F_T = np.multiply(2.7 * np.sqrt(2 * params_obj_body['rho_f'] * params_obj_body['a'] * params_obj_body['mu'] * np.abs(v_norm)), v_tan)
+
+    """ W computation """
+
+    W0 = np.multiply(-1 * F_T, np.cos(phi)) + np.multiply(F_N, np.sin(phi))
+    W1 = np.multiply(-1 * F_T, np.sin(phi)) - np.multiply(F_N, np.cos(phi))
+    W = np.concatenate([W0, W1])
+    Wx = W[:params_obj_body['segments_count']]
+    Wy = W[params_obj_body['segments_count']:]
+
+    """ W_diff computation """
+
+    Wx_diff0 = np.multiply(np.divide(params_obj_body['h'][:-1], params_obj_body['mp'][:-1]), Wx[:-1])
+    WX_diff1 = np.multiply(np.divide(params_obj_body['h'][1:], params_obj_body['mp'][1:]), Wx[1:])
+    Wx_diff = np.subtract(Wx_diff0, WX_diff1)
+    Wx_diff = np.append(Wx_diff, 0)
+
+    Wy_diff0 = np.multiply(np.divide(params_obj_body['h'][:-1], params_obj_body['mp'][:-1]), Wy[:-1])
+    Wy_diff1 = np.multiply(np.divide(params_obj_body['h'][1:], params_obj_body['mp'][1:]), Wy[1:])
+    Wy_diff = np.subtract(Wy_diff0, Wy_diff1)
+    Wy_diff = np.append(Wy_diff, 0)
+
+    """ Second derivative of Phi """
+
+    phi_ddot_numerator0 = np.dot(np.dot(np.dot(-Gcos, params_obj_body['A_plus']), Hsin) + np.dot(np.dot(Gsin, params_obj_body['A_plus']), Hcos), np.power(phidot, 2))
+    phi_ddot_numerator1 = Mdiff + np.dot(np.dot(Gcos, params_obj_body['A_plus']), Wy_diff) - np.dot(np.dot(Gsin, params_obj_body['A_plus']), Wx_diff)
+    phi_ddot_numerator = np.add(phi_ddot_numerator0, phi_ddot_numerator1)
+
+    phi_ddot_denominator = params_obj_body['J'] - np.dot(np.dot(Gcos, params_obj_body['A_plus']), Hcos) - np.dot(np.dot(Gsin, params_obj_body['A_plus']), Hsin)
+    phi_ddot = np.linalg.solve(phi_ddot_denominator, phi_ddot_numerator)
+
+    """ Second derivative of x and y """
+
+    C_ddot = np.zeros(params_obj_body['segments_count'])
+    cs1 = np.cos(phi[0]) * phidot[0]**2 + np.sin(phi[0]) * phi_ddot[0]
+    cs2 = np.cos(phi[1]) * phidot[1]**2 + np.sin(phi[1]) * phi_ddot[1]
+    C_ddot[1] = -params_obj_body['h'][1] / 2. * (cs1 + cs2)
+
+    S_ddot = np.zeros(params_obj_body['segments_count'])
+    sc1 = np.sin(phi[0]) * phidot[0]**2 - np.cos(phi[0]) * phi_ddot[0]
+    sc2 = np.sin(phi[1]) * phidot[1]**2 - np.cos(phi[1]) * phi_ddot[1]
+    S_ddot[1] = -params_obj_body['h'][1] / 2. * (sc1 + sc2)
+
+    for j in range(2, params_obj_body['segments_count']):
+
+        cs_i = np.cos(phi[j]) * phidot[j]**2 + np.sin(phi[j]) * phi_ddot[j]
+        cs_im1 = np.cos(phi[j-1]) * phidot[j-1]**2 + np.sin(phi[j-1]) * phi_ddot[j-1]
+
+        sc_i = np.sin(phi[j]) * phidot[j]**2 - np.cos(phi[j]) * phi_ddot[j]
+        sc_im1 = np.sin(phi[j-1]) * phidot[j-1]**2 - np.cos(phi[j-1]) * phi_ddot[j-1]
+
+        C_ddot[j] = C_ddot[j-1] - params_obj_body['h'][j] / 2. * cs_im1 - params_obj_body['h'][j] / 2. * cs_i
+        S_ddot[j] = S_ddot[j-1] - params_obj_body['h'][j] / 2. * sc_im1 - params_obj_body['h'][j] / 2. * sc_i
+
+    m_sum = np.sum(params_obj_body['mp'])
+
+    x_ddot_1 = np.reciprocal(m_sum) * np.sum(np.multiply(params_obj_body['h'], Wx) - np.multiply(params_obj_body['mp'], C_ddot))
+    y_ddot_1 = np.reciprocal(m_sum) * np.sum(np.multiply(params_obj_body['h'], Wy) - np.multiply(params_obj_body['mp'], S_ddot))
+
+    output_dot = np.asarray([xdot[0], ydot[0]])
+    output_dot = np.concatenate([output_dot, phidot])
+    output_ddot = np.asarray([x_ddot_1, y_ddot_1])
+    output_ddot = np.concatenate([output_ddot, phi_ddot])
+
+    output_final = np.concatenate([output_dot, output_ddot])
+
+    dy[:] = output_final
 
 def muscle_activity_2_calcium_rhs(t, y):
 

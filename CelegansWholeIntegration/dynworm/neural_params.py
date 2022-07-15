@@ -62,9 +62,7 @@ nonlinear_AWA: whether the simulation will incorporate nonlinear channels for AW
 nonlinear_AVL: whether the simulation will incorporate nonlinear channels for AVL
 """
 
-#TODO: IF SIMULAIONS TOO SLOW -> TWO DIFFERENT dt WHEN LINEAR ONLY VS NON_LINEAR NEURONS
-
-init_key_counts = 14
+init_key_counts = 15
 
 pA_unit_baseline = {
 
@@ -86,7 +84,7 @@ pA_unit_baseline = {
 
     }
 
-L_NL_t_conversion = 0.001
+L_NL_t_conversion = 0.001 #1s to 1ms conversion
 
 AWA_nonlinear_params = {
 
