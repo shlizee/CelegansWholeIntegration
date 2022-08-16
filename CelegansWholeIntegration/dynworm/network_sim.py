@@ -22,6 +22,8 @@ from diffeqpy import de, ode
 
 np.random.seed(10)
 
+# TODO: REAL-TIME PLOTTING OF NEURAL VOLTAGE FOR SELECTED NEURON
+
 ########################################################################################################################################################################
 ########################################################################################################################################################################
 ### BASE ENVIRONMENT INITIALIZATION ####################################################################################################################################
@@ -191,7 +193,7 @@ def run_network_constinput(t_duration, input_vec, ablation_mask, \
 
         print("Computing network dynamics with Julia engine...")
 
-        r = de.ODEProblem(membrane_voltageRHS_constinput_julia, initcond, (0, t_duration))
+        r = de.ODEProblem(membrane_voltageRHS_constinput_julia, initcond, (0, tf))
         sol = de.solve(r, de.QNDF(autodiff=False), saveat = params_obj_neural['dt'], reltol = 1e-8, abstol = 1e-8, save_everystep=False)
 
         t = sol.t
@@ -388,7 +390,7 @@ def run_network_externalV(input_mat, ext_voltage_mat, ablation_mask, \
 
         print("Computing network dynamics with Julia engine...")
 
-        r = de.ODEProblem(membrane_voltageRHS_vext_julia, initcond, (0, t_duration))
+        r = de.ODEProblem(membrane_voltageRHS_vext_julia, initcond, (0, tf))
         sol = de.solve(r, de.QNDF(autodiff=False), saveat = params_obj_neural['dt'], reltol = 1e-8, abstol = 1e-8, save_everystep=False)
 
         vthmat = np.zeros((nsteps, params_obj_neural['N']))

@@ -11,7 +11,7 @@
 		# b. Muscle Activity to Calcium dynamics														                    #
 		# c. Calcium dynamics to Force                                									                    #
 ##### 3. Body Posture Simulation																		                    #
-		# a. Forces to dynamic body postures using fluid equation                     # 
+		# a. Forces to dynamic body postures using fluid equation                                                           # 
 #############################################################################################################################
 
 # Computation layers  #######################################################################################################
@@ -22,10 +22,8 @@
 # 5. Extra-synaptic                                           (279 * 279)          (Planned)                                #
 #############################################################################################################################
 
-# TODO: USE JULIA INTEGRATOR FOR NON-LINEAR SIMULATIONS + BODY
-
-__author__ = 'Jimin Kim: jk55@u.washington.edu'
-__version__ = '0.2.0'
+__author__ = 'Jimin Kim: jk55@u.washington.edu, Linh Truong: linhtruong2001@gmail.com'
+__version__ = '0.3.0'
 
 from dynworm import sys_paths # Handles working directory for different OS
 from dynworm import neural_params # Contains connectomes + physiological parameters used for neural simulations

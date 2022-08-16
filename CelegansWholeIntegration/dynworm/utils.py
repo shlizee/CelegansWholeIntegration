@@ -23,6 +23,8 @@ from dynworm import sys_paths as paths
 from dynworm import neural_params as n_params
 from dynworm import neurons_idx as n_idx
 
+import matplotlib.pyplot as plt
+
 def load_Json(filename):
 
     with open(filename) as content:
@@ -432,3 +434,22 @@ def all_possible_combinations(candidates):
             combination_list.append(row)
     
     return combination_list
+
+def generate_pulse_inputs(duration, amp, freq, plot = False):
+    
+    input_mat = np.zeros((duration)) # 1 = 10ms
+    t = np.linspace(0, freq, duration - round(duration/(freq*2)), endpoint=False)
+
+    pulse = (amp * signal.square(2 * np.pi * t) + amp)/2
+
+    input_mat[:round(duration/(freq*2))] = 0
+    input_mat[round(duration/(freq*2)):] = pulse
+
+    if plot:
+    
+        plt.plot(input_mat[:])
+        plt.title('input mat')
+        plt.ylabel('amplitude (pA)')
+        plt.xlabel('time (10ms)')
+    
+    return input_mat
