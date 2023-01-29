@@ -105,7 +105,7 @@ L_NL_t_conversion = 0.001 #1s to 1ms conversion
 AWA_nonlinear_params = {
 
     "AWA_inds": np.array([73, 82]), #73, 82 
-    "C": 0.0015, #0.0015,
+    "C": 0.0015 * 0.01, #0.0015,
     "gK": 1.5,                                           #0
     "vK": -84.,                                          #1
     "vk1": 2.,                                           #2
