@@ -254,8 +254,6 @@ def compute_eigworm_CI(eig_coeff_stacked, confidence):
         
     return mean_coeffcients, ci_list
 
-# Compute CI
-
 def compute_CI_from_swarm(stored_x, stored_y, center_coords, boundary_radius, batchsize):
     
     # Take the last points
@@ -413,11 +411,11 @@ def make_smooth_pulse(time_length, dt, pre_stim, post_stim, rate):
         
         if tk < time_length // 2:
             
-            current_arr[k] = update_Mask(pre_stim, post_stim, tk, rate, time_length / 10)
+            current_arr[k] = continuous_transition_scaler(pre_stim, post_stim, tk, rate, time_length / 10)
             
         else:
             
-            current_arr[k] = update_Mask(post_stim, pre_stim, tk, rate, (time_length / 10) * 9)
+            current_arr[k] = continuous_transition_scaler(post_stim, pre_stim, tk, rate, (time_length / 10) * 9)
             
     return time_discretized_arr, current_arr
 
@@ -451,5 +449,20 @@ def generate_pulse_inputs(duration, amp, freq, plot = False):
         plt.title('input mat')
         plt.ylabel('amplitude (pA)')
         plt.xlabel('time (10ms)')
+        plt.show()
     
     return input_mat
+
+def swarm_init(num):
+    
+    x_init = np.array([0.0]*num)
+    y_init = np.array([0.0]*num)
+    orientation = np.array([0.0]*num)
+    angle_step = 360/num
+    
+    for i in range(num):
+        orientation[i] = i*angle_step
+        x_init[i] = math.cos(math.radians(orientation[i]))*125
+        y_init[i] = math.sin(math.radians(orientation[i]))*125
+    
+    return x_init, y_init, orientation

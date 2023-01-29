@@ -7,11 +7,17 @@
 ########################################################################################################################################################################
 ########################################################################################################################################################################
 
+from julia.api import LibJulia
+api = LibJulia.load()
+api.init_julia(["check_bounds=yes"])
+
 import time
 import os
 
 import numpy as np
+import torch
 import scipy.io as sio
+import numba
 from scipy import integrate, sparse, linalg, interpolate
 
 from dynworm import sys_paths as paths
@@ -23,8 +29,9 @@ from diffeqpy import de, ode
 np.random.seed(10)
 
 # TODO: REAL-TIME PLOTTING OF NEURAL VOLTAGE FOR SELECTED NEURON
+# GENERALIZE PHYSIOLOGICAL PARAMETERS
+# SUPPORT FOR NON_JULIA
 
-########################################################################################################################################################################
 ########################################################################################################################################################################
 ### BASE ENVIRONMENT INITIALIZATION ####################################################################################################################################
 ########################################################################################################################################################################
@@ -112,6 +119,9 @@ def initialize_connectivity(custom_connectivity_dict = False):
     params_obj_neural['EMat'] = params_obj_neural['E_rev'] * EMat_mask
     params_obj_neural['mask_Healthy'] = np.ones(params_obj_neural['N'], dtype = 'bool')
 
+def query_params_obj_neural():
+
+    return params_obj_neural
 
 ########################################################################################################################################################################
 ### MASTER EXECUTION FUNCTIONS (BASIC) #################################################################################################################################
@@ -120,7 +130,8 @@ def initialize_connectivity(custom_connectivity_dict = False):
 ########################################################################################################################################################################
 
 def run_network_constinput(t_duration, input_vec, ablation_mask, \
-    custom_initcond = False, ablation_type = "all", verbose = True):
+    custom_initcond = False, ablation_type = "all", verbose = True, 
+    use_julia_engine = False):
 
     assert 'params_obj_neural' in globals(), "Neural parameters and connectivity must be initialized before running the simulation"
 
@@ -155,7 +166,7 @@ def run_network_constinput(t_duration, input_vec, ablation_mask, \
 
     print("Network integration prep completed...")
 
-    if params_obj_neural['nonlinear_AWA'] + params_obj_neural['nonlinear_AVL'] == 0:
+    if params_obj_neural['nonlinear_AWA'] + params_obj_neural['nonlinear_AVL'] == 0 and use_julia_engine == False:
 
         r = integrate.ode(membrane_voltageRHS_constinput, compute_jacobian_constinput).set_integrator('vode', rtol = 1e-8, atol = 1e-8, method = 'bdf')
         r.set_initial_value(initcond, 0)
@@ -196,6 +207,8 @@ def run_network_constinput(t_duration, input_vec, ablation_mask, \
         r = de.ODEProblem(membrane_voltageRHS_constinput_julia, initcond, (0, tf))
         sol = de.solve(r, de.QNDF(autodiff=False), saveat = params_obj_neural['dt'], reltol = 1e-8, abstol = 1e-8, save_everystep=False)
 
+        vthmat = np.tile(params_obj_neural['vth'], (nsteps, 1))
+
         t = sol.t
         traj = np.vstack(sol.u)[:, :params_obj_neural['N']]
 
@@ -211,7 +224,8 @@ def run_network_constinput(t_duration, input_vec, ablation_mask, \
 
 def run_network_dyninput(input_mat, ablation_mask, \
     custom_initcond = False, ablation_type = "all", \
-    interp_kind_input = 'nearest', verbose = True):
+    interp_kind_input = 'nearest', verbose = True, 
+    use_julia_engine = False):
 
     assert 'params_obj_neural' in globals(), "Neural parameters and connectivity must be initialized before running the simulation"
 
@@ -244,7 +258,7 @@ def run_network_dyninput(input_mat, ablation_mask, \
 
     """ Configuring the ODE Solver """
 
-    if params_obj_neural['nonlinear_AWA'] + params_obj_neural['nonlinear_AVL'] == 0:
+    if params_obj_neural['nonlinear_AWA'] + params_obj_neural['nonlinear_AVL'] == 0 and use_julia_engine == False:
 
         r = integrate.ode(membrane_voltageRHS_dyninput, compute_jacobian_dyninput).set_integrator('vode', rtol = 1e-8, atol = 1e-8, method = 'bdf')
         r.set_initial_value(initcond, t0)
@@ -314,7 +328,8 @@ def run_network_dyninput(input_mat, ablation_mask, \
 
 def run_network_externalV(input_mat, ext_voltage_mat, ablation_mask, \
     custom_initcond = False, ablation_type = "all", \
-    interp_kind_input = 'nearest', interp_kind_voltage = 'linear', verbose = True):
+    interp_kind_input = 'nearest', interp_kind_voltage = 'linear', verbose = True, 
+    use_julia_engine = False):
     
     assert 'params_obj_neural' in globals(), "Neural parameters and connectivity must be initialized before running the simulation"
     assert len(input_mat) == len(ext_voltage_mat), "Length of input_mat and ext_voltage_mat should be identical"
@@ -350,7 +365,7 @@ def run_network_externalV(input_mat, ext_voltage_mat, ablation_mask, \
 
     """ Configuring the ODE Solver """
 
-    if params_obj_neural['nonlinear_AWA'] + params_obj_neural['nonlinear_AVL'] == 0:
+    if params_obj_neural['nonlinear_AWA'] + params_obj_neural['nonlinear_AVL'] == 0 and use_julia_engine == False:
 
         r = integrate.ode(membrane_voltageRHS_vext, compute_jacobian_vext).set_integrator('vode', rtol = 1e-8, atol = 1e-8, method = 'bdf')
         r.set_initial_value(initcond, t0)
@@ -415,7 +430,8 @@ def run_network_externalV(input_mat, ext_voltage_mat, ablation_mask, \
 def run_network_fdb(input_mat, ablation_mask, \
     custom_initcond = False, ablation_type = "all", \
     interp_kind_input = 'nearest', \
-    custom_muscle_map = False, fdb_init = 1.38, t_delay = 0.54, reaction_scaling = 1, verbose = True):
+    custom_muscle_map = False, fdb_init = 1.38, t_delay = 0.54, reaction_scaling = 1, verbose = True, 
+    use_julia_engine = False):
 
     assert 'params_obj_neural' in globals(), "Neural parameters and connectivity must be initialized before running the simulation"
 
@@ -476,7 +492,7 @@ def run_network_fdb(input_mat, ablation_mask, \
 
     """ Configuring the ODE Solver """
 
-    if params_obj_neural['nonlinear_AWA'] + params_obj_neural['nonlinear_AVL'] == 0:
+    if params_obj_neural['nonlinear_AWA'] + params_obj_neural['nonlinear_AVL'] == 0 and use_julia_engine == False:
 
         r = integrate.ode(membrane_voltageRHS_fdb, compute_jacobian_fdb).set_integrator('vode', rtol = 1e-8, atol = 1e-8, method = 'bdf')
         r.set_initial_value(initcond, t0)
@@ -547,7 +563,8 @@ def run_network_fdb(input_mat, ablation_mask, \
 def run_network_fdb_externalV(input_mat, ext_voltage_mat, ablation_mask, \
     custom_initcond = False, ablation_type = "all", \
     interp_kind_input = 'nearest', interp_kind_voltage = 'linear', \
-    custom_muscle_map = False, fdb_init = 1.38, t_delay = 0.54, reaction_scaling = 1, verbose = True):
+    custom_muscle_map = False, fdb_init = 1.38, t_delay = 0.54, reaction_scaling = 1, verbose = True, 
+    use_julia_engine = False):
 
     assert 'params_obj_neural' in globals(), "Neural parameters and connectivity must be initialized before running the simulation"
     assert len(input_mat) == len(ext_voltage_mat), "Length of input_mat and ext_voltage_mat should be identical"
@@ -612,7 +629,7 @@ def run_network_fdb_externalV(input_mat, ext_voltage_mat, ablation_mask, \
 
     """ Configuring the ODE Solver """
 
-    if params_obj_neural['nonlinear_AWA'] + params_obj_neural['nonlinear_AVL'] == 0:
+    if params_obj_neural['nonlinear_AWA'] + params_obj_neural['nonlinear_AVL'] == 0 and use_julia_engine == False:
 
         r = integrate.ode(membrane_voltageRHS_fdb, compute_jacobian_fdb).set_integrator('vode', rtol = 1e-8, atol = 1e-8, method = 'bdf')
         r.set_initial_value(initcond, t0)
@@ -865,7 +882,6 @@ def modify_Connectome(ablation_mask, ablation_type):
             print("Ablating only Gap")
 
         EffVth(params_obj_neural['Gg_Dynamic'], params_obj_neural['Gs_Dynamic'])
-
 
 def ablate_edges(neurons_from, neurons_to, conn_type):
 
@@ -1852,9 +1868,13 @@ def compute_jacobian_vext_spatialgrad(t, y):
 
     return J
 
-########################## NON-LINEAR CURRENT #####################################################################################################################################################
+#########################################################################################################################################################################
+### NON LINEAR CURRENTS #################################################################################################################################################
+#########################################################################################################################################################################
+#########################################################################################################################################################################
+#########################################################################################################################################################################
 
-def AWA_nonlinear_current(AWA_dyn_vec): # Incorporate leaky current
+def AWA_nonlinear_current(AWA_dyn_vec):
 
     AWA_dict = params_obj_neural['AWA_nonlinear_params']
 
@@ -1862,42 +1882,39 @@ def AWA_nonlinear_current(AWA_dyn_vec): # Incorporate leaky current
 
     """ channel variables """
 
-    v = Vvec[params_obj_neural['AWA_nonlinear_params']['AWA_inds']]
-    w = wVec[params_obj_neural['AWA_nonlinear_params']['AWA_inds']]
-    c1 = c1Vec[params_obj_neural['AWA_nonlinear_params']['AWA_inds']]
-    c2 = c2Vec[params_obj_neural['AWA_nonlinear_params']['AWA_inds']]
-    bk = bkVec[params_obj_neural['AWA_nonlinear_params']['AWA_inds']]
-    slo = sloVec[params_obj_neural['AWA_nonlinear_params']['AWA_inds']]
-    slo2 = slo2Vec[params_obj_neural['AWA_nonlinear_params']['AWA_inds']]
-    kb = kbVec[params_obj_neural['AWA_nonlinear_params']['AWA_inds']]
+    v = Vvec[AWA_dict['AWA_inds']]
+    w = wVec[AWA_dict['AWA_inds']]
+    c1 = c1Vec[AWA_dict['AWA_inds']]
+    c2 = c2Vec[AWA_dict['AWA_inds']]
+    bk = bkVec[AWA_dict['AWA_inds']]
+    slo = sloVec[AWA_dict['AWA_inds']]
+    slo2 = slo2Vec[AWA_dict['AWA_inds']]
+    kb = kbVec[AWA_dict['AWA_inds']]
 
     """ leak current """
 
-    LCurr = params_obj_neural['AWA_nonlinear_params']['gL']*(v - params_obj_neural['AWA_nonlinear_params']['vL'])
+    LCurr = AWA_dict['gL']*(v - AWA_dict['vL'])
 
     """ potassium current """
 
-    xinf = 0.5*(1 + np.tanh((v-params_obj_neural['AWA_nonlinear_params']['vk1'])/params_obj_neural['AWA_nonlinear_params']['vk2']))
-    minf = 0.5*(1 + np.tanh((v-params_obj_neural['AWA_nonlinear_params']['vm1'])/params_obj_neural['AWA_nonlinear_params']['vm2']))
-    winf = 0.5*(1 + np.tanh((v-params_obj_neural['AWA_nonlinear_params']['vm3'])/params_obj_neural['AWA_nonlinear_params']['vm4']))
-    yinf = 0.5*(1 + np.tanh((v-params_obj_neural['AWA_nonlinear_params']['vb1'])/params_obj_neural['AWA_nonlinear_params']['vb2']))
-    zinf = 0.5*(1 + np.tanh((v-params_obj_neural['AWA_nonlinear_params']['vs1'])/params_obj_neural['AWA_nonlinear_params']['vs2']))
-    qinf = 0.5*(1 + np.tanh((v-params_obj_neural['AWA_nonlinear_params']['vq1'])/params_obj_neural['AWA_nonlinear_params']['vq2'])) 
-    pinf = 0.5*(1 + np.tanh((v-params_obj_neural['AWA_nonlinear_params']['vp1'])/params_obj_neural['AWA_nonlinear_params']['vp2']))
+    xinf = 0.5*(1 + np.tanh((v-AWA_dict['vk1'])/AWA_dict['vk2']))
+    minf = 0.5*(1 + np.tanh((v-AWA_dict['vm1'])/AWA_dict['vm2']))
+    winf = 0.5*(1 + np.tanh((v-AWA_dict['vm3'])/AWA_dict['vm4']))
+    yinf = 0.5*(1 + np.tanh((v-AWA_dict['vb1'])/AWA_dict['vb2']))
+    zinf = 0.5*(1 + np.tanh((v-AWA_dict['vs1'])/AWA_dict['vs2']))
+    qinf = 0.5*(1 + np.tanh((v-AWA_dict['vq1'])/AWA_dict['vq2'])) 
+    pinf = 0.5*(1 + np.tanh((v-AWA_dict['vp1'])/AWA_dict['vp2']))
 
-    gkt = params_obj_neural['AWA_nonlinear_params']['TKL']+(params_obj_neural['AWA_nonlinear_params']['TKH']-params_obj_neural['AWA_nonlinear_params']['TKL'])*0.5*\
-    (1+np.tanh(v-params_obj_neural['AWA_nonlinear_params']['vtk1'])/params_obj_neural['AWA_nonlinear_params']['vtk2'])
+    gkt = AWA_dict['TKL']+(AWA_dict['TKH']-AWA_dict['TKL'])*0.5*(1+np.tanh(v-AWA_dict['vtk1'])/AWA_dict['vtk2'])
 
-    tau = 1.0/np.cosh((v-params_obj_neural['AWA_nonlinear_params']['vt1'])/(2*params_obj_neural['AWA_nonlinear_params']['vt2']))
-    kir = -np.log(1+np.exp(-0.2*(v-params_obj_neural['AWA_nonlinear_params']['vK']-params_obj_neural['AWA_nonlinear_params']['gKI'])))/0.2+params_obj_neural['AWA_nonlinear_params']['gKI']
+    tau = 1.0/np.cosh((v-AWA_dict['vt1'])/(2*AWA_dict['vt2']))
+    kir = -np.log(1+np.exp(-0.2*(v-AWA_dict['vK']-AWA_dict['gKI'])))/0.2+AWA_dict['gKI']
     
-    KCurr = (params_obj_neural['AWA_nonlinear_params']['gK']*w+params_obj_neural['AWA_nonlinear_params']['gK7']*\
-        slo2+params_obj_neural['AWA_nonlinear_params']['gK4']*slo+params_obj_neural['AWA_nonlinear_params']['gK6']+params_obj_neural['AWA_nonlinear_params']['gK3']*\
-        yinf*(1-bk)+params_obj_neural['AWA_nonlinear_params']['gK5']*kb)*(v-params_obj_neural['AWA_nonlinear_params']['vK']) + params_obj_neural['AWA_nonlinear_params']['gK2']*kir
+    KCurr = (AWA_dict['gK']*w+AWA_dict['gK7']*slo2+AWA_dict['gK4']*slo+AWA_dict['gK6']+AWA_dict['gK3']*yinf*(1-bk)+AWA_dict['gK5']*kb)*(v-AWA_dict['vK']) + AWA_dict['gK2']*kir
 
     """ calcium current """
 
-    CaCurr = params_obj_neural['AWA_nonlinear_params']['gCa']*(c1+params_obj_neural['AWA_nonlinear_params']['fac']*c2)*(v-params_obj_neural['AWA_nonlinear_params']['vCa'])
+    CaCurr = AWA_dict['gCa']*(c1+AWA_dict['fac']*c2)*(v-AWA_dict['vCa'])
 
     dv_AWA_vec = np.zeros(params_obj_neural['N'])
     dw_AWA_vec = np.zeros(params_obj_neural['N'])
@@ -1908,17 +1925,14 @@ def AWA_nonlinear_current(AWA_dyn_vec): # Incorporate leaky current
     dslo2_AWA_vec = np.zeros(params_obj_neural['N'])
     dkb_AWA_vec = np.zeros(params_obj_neural['N']) 
 
-    np.put(dv_AWA_vec, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], LCurr + KCurr + CaCurr)
-    np.put(dw_AWA_vec, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], (xinf-w)/params_obj_neural['AWA_nonlinear_params']['TK'])
-    np.put(dc1_AWA_vec, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], (minf*winf/params_obj_neural['AWA_nonlinear_params']['mx']-c1)/params_obj_neural['AWA_nonlinear_params']['TC1']-\
-        minf*winf*c2/(params_obj_neural['AWA_nonlinear_params']['mx']*params_obj_neural['AWA_nonlinear_params']['TC1'])-c1/(2*params_obj_neural['AWA_nonlinear_params']['TC2']*tau)+c2/\
-        (2*params_obj_neural['AWA_nonlinear_params']['TC2']*tau))
-
-    np.put(dc2_AWA_vec, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], (c1-c2)/(2*params_obj_neural['AWA_nonlinear_params']['TC2']*tau))
-    np.put(dbk_AWA_vec, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], (yinf-bk)/params_obj_neural['AWA_nonlinear_params']['TbK'])
-    np.put(dslo_AWA_vec, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], (zinf-slo)/params_obj_neural['AWA_nonlinear_params']['TS'])
-    np.put(dslo2_AWA_vec, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], (qinf-slo2)/params_obj_neural['AWA_nonlinear_params']['TS2'])
-    np.put(dkb_AWA_vec, params_obj_neural['AWA_nonlinear_params']['AWA_inds'], (pinf-kb)/gkt)
+    np.put(dv_AWA_vec, AWA_dict['AWA_inds'], LCurr + KCurr + CaCurr)
+    np.put(dw_AWA_vec, AWA_dict['AWA_inds'], (xinf-w)/AWA_dict['TK'])
+    np.put(dc1_AWA_vec, AWA_dict['AWA_inds'], (minf*winf/AWA_dict['mx']-c1)/AWA_dict['TC1']-minf*winf*c2/(AWA_dict['mx']*AWA_dict['TC1'])-c1/(2*AWA_dict['TC2']*tau)+c2/(2*AWA_dict['TC2']*tau))
+    np.put(dc2_AWA_vec, AWA_dict['AWA_inds'], (c1-c2)/(2*AWA_dict['TC2']*tau))
+    np.put(dbk_AWA_vec, AWA_dict['AWA_inds'], (yinf-bk)/AWA_dict['TbK'])
+    np.put(dslo_AWA_vec, AWA_dict['AWA_inds'], (zinf-slo)/AWA_dict['TS'])
+    np.put(dslo2_AWA_vec, AWA_dict['AWA_inds'], (qinf-slo2)/AWA_dict['TS2'])
+    np.put(dkb_AWA_vec, AWA_dict['AWA_inds'], (pinf-kb)/gkt)
 
     d_AWA_dyn_vec = np.concatenate((dv_AWA_vec, dw_AWA_vec, dc1_AWA_vec, dc2_AWA_vec, dbk_AWA_vec, dslo_AWA_vec, dslo2_AWA_vec, dkb_AWA_vec))
 
@@ -2094,7 +2108,7 @@ def combine_baseline_nonlinear_currents(rhs_dict): # Needs to be simplified
 
         return np.concatenate((dV, dS, dAVL_dyn_vec[params_obj_neural['N']:]))
 
-    else:
+    elif params_obj_neural['nonlinear_AWA'] == True and params_obj_neural['nonlinear_AVL'] == True:
 
         AWA_dyn_vec = np.concatenate([rhs_dict['Vvec'], rhs_dict['y'][params_obj_neural['N'] * 2:9*params_obj_neural['N']]])
         AVL_dyn_vec = np.concatenate([rhs_dict['Vvec'], rhs_dict['y'][9*params_obj_neural['N']:]])
@@ -2111,3 +2125,992 @@ def combine_baseline_nonlinear_currents(rhs_dict): # Needs to be simplified
         dS = np.subtract(rhs_dict['SynRise'], rhs_dict['SynDrop'])
 
         return np.concatenate((dV, dS, dAWA_dyn_vec[params_obj_neural['N']:], dAVL_dyn_vec[params_obj_neural['N']:]))
+
+    else:
+
+        dV = (-(rhs_dict['VsubEc'] + rhs_dict['GapCon'] + rhs_dict['SynapCon']) + rhs_dict['Input'])/params_obj_neural['C']
+        dS = np.subtract(rhs_dict['SynRise'], rhs_dict['SynDrop'])
+
+        return np.concatenate((dV, dS))
+
+#########################################################################################################################################################################
+### STANDALONE FUNCTIONS FOR NEURON DYNAMICS ############################################################################################################################
+#########################################################################################################################################################################
+#########################################################################################################################################################################
+#########################################################################################################################################################################
+
+eps = 1e-12
+
+def xinf(v_h, veq_h, k_h):
+
+    return 1 / (1 + np.exp((veq_h - v_h) / k_h))
+
+def xinf_torch(v_h, veq_h, k_h):
+
+    x = (veq_h - v_h) / (k_h + eps)
+
+    return torch.sigmoid(-x)
+
+def run_network_CBM(param_vec, iext_amp, neuron_type):
+
+    param_vec_iext = np.append(param_vec, iext_amp)
+    param_vec_iext = np.array(param_vec_iext)
+
+    initcond = param_vec_iext[[22, 18, 19, 20]]
+
+    if neuron_type == 'cap':
+
+        r = de.ODEProblem(cap_model_rhs_numba, initcond, (0, 50), param_vec_iext)
+
+    else:
+
+        r = de.ODEProblem(cat_model_rhs_numba, initcond, (0, 50), param_vec_iext)
+
+    sol = de.solve(r, de.KenCarp47(autodiff=False), saveat = 0.1, save_everystep=False, abstol = 1e-8, reltol = 1e-8)
+
+    t = sol.t
+    traj = np.vstack(sol.u)
+
+    return traj
+
+def cap_model_rhs_numba(dy, y, p, t):
+
+    v = y[0]
+    mCa = y[1]
+    mK = y[2]
+    hK = y[3]
+
+    Iext = p[23]
+
+    dv = (-p[0] * mCa * (v - p[4]) - p[1] * xinf(v, p[8], p[12]) * (v - p[5]) - \
+    p[2] * mK * hK * (v - p[5]) - p[3] * (v - p[6]) + Iext) / p[21]
+
+    dmCa = (xinf(v, p[7], p[11]) - mCa)/p[15]
+    dmK = (xinf(v, p[9], p[13]) - mK)/p[16]
+    dhK = (xinf(v, p[10], p[14]) - hK)/p[17]
+
+    dy[:] = [dv, dmCa, dmK, dhK]
+
+def cat_model_rhs_numba(dy, y, p, t):
+
+    v = y[0]
+    mCa = y[1]
+    hCa = y[2]
+    mK = y[3]
+
+    Iext = p[23]
+
+    dv = (-p[0] * mCa * hCa * (v - p[4]) - p[1] * xinf(v, p[9], p[13]) * (v - p[5]) - \
+    p[2] * mK * (v - p[5]) - p[3] * (v - p[6]) + Iext) / p[21]
+
+    dmCa = (xinf(v, p[7], p[11]) - mCa)/p[15]
+    dhCa = (xinf(v, p[8], p[12]) - hCa)/p[16]
+    dmK = (xinf(v, p[10], p[14]) - mK)/p[17]
+
+    dy[:] = [dv, dmCa, dhCa, dmK]
+
+numba_cap_model_rhs = numba.jit(cap_model_rhs_numba)
+numba_cat_model_rhs = numba.jit(cat_model_rhs_numba)
+
+def CAP_V2I_torch_scaled(voltage_V, p_cap):
+
+    v = voltage_V
+    mCa_inf = xinf_torch(v, p_cap[:, 7], p_cap[:, 11])
+    hKir_inf = xinf_torch(v, p_cap[:, 8], p_cap[:, 12])
+    mK_inf = xinf_torch(v, p_cap[:, 9], p_cap[:, 13])
+    hK_inf = xinf_torch(v, p_cap[:, 10], p_cap[:, 14])
+
+    totalCurr = p_cap[:, 0] * mCa_inf * (v - p_cap[:, 4]) + p_cap[:, 1] * hKir_inf * (v - p_cap[:, 5]) + \
+    p_cap[:, 2] * mK_inf * hK_inf * (v - p_cap[:, 5]) + p_cap[:, 3] * (v - p_cap[:, 6])
+
+    return totalCurr
+
+def CAT_V2I_torch_scaled(voltage_V, p_cat):
+
+    v = voltage_V
+    mCa_inf = xinf_torch(v, p_cat[:, 7], p_cat[:, 11])
+    hCa_inf = xinf_torch(v, p_cat[:, 8], p_cat[:, 12])
+    hKir_inf = xinf_torch(v, p_cat[:, 9], p_cat[:, 13])
+    mK_inf = xinf_torch(v, p_cat[:, 10], p_cat[:, 14])
+
+    totalCurr = p_cat[:, 0] * mCa_inf * hCa_inf * (v - p_cat[:, 4]) + p_cat[:, 1] * hKir_inf * (v - p_cat[:, 5]) + \
+    p_cat[:, 2] * mK_inf * (v - p_cat[:, 5]) + p_cat[:, 3] * (v - p_cat[:, 6])
+
+    return totalCurr
+
+def cap_model_rhs_torch_scaled(V, y, p, iext):
+
+    # V = (128, 500, 11)
+    # y = (128, 500, 3, 11)
+    # p = (128, 24, 1, 1)
+    # iext = (128, 500, 11)
+
+    mCa = y[:, :, 0, :]
+    mK = y[:, :, 1, :]
+    hK = y[:, :, 2, :]
+
+    dV = (-p[:, 0] * mCa * (V - p[:, 4]) - p[:, 1] * xinf_torch(V, p[:, 8], p[:, 12]) * (V - p[:, 5]) - \
+    p[:, 2] * mK * hK * (V - p[:, 5]) - p[:, 3] * (V - p[:, 6]) + iext) / (p[:, 21] + eps)
+
+    dmCa = (xinf_torch(V, p[:, 7], p[:, 11]) - mCa)/(p[:, 15] + eps)
+    dmK = (xinf_torch(V, p[:, 9], p[:, 13]) - mK)/(p[:, 16] + eps)
+    dhK = (xinf_torch(V, p[:, 10], p[:, 14]) - hK)/(p[:, 17] + eps)
+
+    return torch.cat([dV, dmCa, dmK, dhK], axis = 2)
+
+def cat_model_rhs_torch_scaled(V, y, p, iext):
+
+    # V = (128, 500, 11)
+    # y = (128, 500, 3, 11)
+    # p = (128, 24, 1, 1)
+    # iext = (128, 500, 11)
+
+    mCa = y[:, :, 0, :]
+    hCa = y[:, :, 1, :]
+    mK = y[:, :, 2, :]
+
+    dV = (-p[:, 0] * mCa * hCa * (V - p[:, 4]) - p[:, 1] * xinf_torch(V, p[:, 9], p[:, 13]) * (V - p[:, 5]) - \
+    p[:, 2] * mK * (V - p[:, 5]) - p[:, 3] * (V - p[:, 6]) + iext) / (p[:, 21] + eps)
+
+    dmCa = (xinf_torch(V, p[:, 7], p[:, 11]) - mCa)/(p[:, 15] + eps)
+    dhCa = (xinf_torch(V, p[:, 8], p[:, 12]) - hCa)/(p[:, 16] + eps)
+    dmK = (xinf_torch(V, p[:, 10], p[:, 14]) - mK)/(p[:, 17] + eps)
+
+    return torch.cat([dV, dmCa, dhCa, dmK], axis = 2)
+
+#########################################################################################################################################################################
+### STANDALONE FUNCTIONS FOR NEURON DYNAMICS GENERIC ####################################################################################################################
+#########################################################################################################################################################################
+#########################################################################################################################################################################
+#########################################################################################################################################################################
+
+@numba.extending.overload(np.heaviside)
+def np_heaviside(x1, x2):
+    def heaviside_impl(x1, x2):
+        if x1 < 0:
+            return 0.0
+        elif x1 > 0:
+            return 1.0
+        else:
+            return x2
+
+    return heaviside_impl
+
+def run_network_generic(param_vec, iext_amp):
+
+    param_vec[-1] = iext_amp
+    param_vec = np.array(param_vec)
+
+    initcond = param_vec[185:-2]
+
+    r = de.ODEProblem(numba_generic_model_rhs, initcond, (0, 7000), param_vec)
+
+    sol = de.solve(r, de.KenCarp47(autodiff=False), saveat = 1., save_everystep=False, abstol = 1e-8, reltol = 1e-8)
+
+    t = sol.t
+    traj = np.vstack(sol.u)#[:, 0]
+
+    return traj
+
+def generic_model_rhs(dy, y, p, t):
+
+    V = y[0]
+    m_SHL1 = y[1]
+    h_SHL1_f = y[2]
+    h_SHL1_s = y[3]
+    m_KVS1 = y[4]
+    h_KVS1 = y[5]
+    m_SHK1 = y[6]
+    h_SHK1 = y[7]
+    m_KQT3_f = y[8]
+    m_KQT3_s = y[9]
+    w_KQT3 = y[10]
+    s_KQT3 = y[11]
+    m_EGL2 = y[12]
+    m_EGL36_f = y[13]
+    m_EGL36_m = y[14]
+    m_EGL36_s = y[15]
+    m_IRK = y[16]
+    m_EGL19 = y[17]
+    h_EGL19 = y[18]
+    m_UNC2 = y[19]
+    h_UNC2 = y[20]
+    m_CCA1 = y[21]
+    h_CCA1 = y[22]
+    m_SLO1_EGL19 = y[23]
+    m_SLO1_UNC2 = y[24]
+    m_SLO2_EGL19 = y[25]
+    m_SLO2_UNC2 = y[26]
+    m_KCNL = y[27]
+    CA2_pos_m = y[28]
+
+    # Voltage Gated Potassium Currents
+
+    I_SHL1 = p[0] * m_SHL1**3 * (0.7 * h_SHL1_f + 0.3 * h_SHL1_s) * (V - p[181])                                                 # SHL1_g, VK
+    I_KVS1 = p[31] * m_KVS1 * h_KVS1 * (V - p[181])                                                                              # KVS1_g, VK
+    I_SHK1 = p[19] * m_SHK1 * h_SHK1 * (V - p[181])                                                                              # SHK1_g, VK
+    I_KQT3 = p[44] * (0.7 * m_KQT3_f + 0.3 * m_KQT3_s) * w_KQT3 * s_KQT3 * (V - p[181])                                          # KQT3_g, Vk
+    I_EGL2 = p[70] * m_EGL2 * (V - p[181])                                                                                       # EGL2_g, VK
+    I_EGL36 = p[77] * (0.33 * m_EGL36_f + 0.36 * m_EGL36_m + 0.39 * m_EGL36_s) * (V - p[181])                                    # EGL36_g, VK
+    I_IRK = p[83] * m_IRK * (V - p[181])                                                                                         # IRK_g, VK
+
+    I_K = I_SHL1 + I_KVS1 + I_SHK1 + I_KQT3 + I_EGL2 + I_EGL36 + I_IRK
+
+    # Voltage Gated Calcium Currents
+
+    I_EGL19 = p[92] * m_EGL19 * h_EGL19 * (V - p[182])                                                                           # EGL19_g, VCa 
+    I_UNC2 = p[118] * m_UNC2 * h_UNC2 * (V - p[182])                                                                             # UNC2_g, VCa
+    I_CCA1 = p[134] * m_CCA1**2 * h_CCA1 * (V - p[182])                                                                          # CCA1_g, VCa
+
+    I_C = I_EGL19 + I_UNC2 + I_CCA1
+
+    # Calcium Regulated Potassium Currents
+
+    I_SLO1_EGL19 = p[147] * m_SLO1_EGL19 * h_EGL19 * (V - p[181])                                                                # SLO1_g, VK
+    I_SLO1_UNC2 = p[147] * m_SLO1_UNC2 * h_UNC2 * (V - p[181])                                                                   # SLO1_g, VK
+    I_SLO2_EGL19 = p[156] * m_SLO2_EGL19 * h_EGL19 * (V - p[181])                                                                # SLO2_g, VK
+    I_SLO2_UNC2 = p[156] * m_SLO2_UNC2 * h_UNC2 * (V - p[181])                                                                   # SLO2_g, VK
+    I_KCNL = p[165] * m_KCNL * (V - p[181])                                                                                      # KCNL_g, VK
+
+    I_KCa = I_SLO1_EGL19 + I_SLO1_UNC2 + I_SLO2_EGL19 + I_SLO2_UNC2 + I_KCNL
+
+    # Leak Currents
+
+    I_NCA = p[179] * (V - p[183])                                                                                                # NCA_g, VNa
+    I_LEAK = p[180] * (V - p[184])                                                                                               # LEAK_g, VL
+
+    I_L = I_NCA + I_LEAK
+
+    # Calcium Concentration
+
+    I_Ca = p[168] * np.abs((V - p[182])) * 1e-9 * 1e-3                                                                           # ICC_gsc, VCa
+    CA2_pos_n = I_Ca / (8 * np.pi * p[169] * p[171] * p[170]) * np.exp(-p[169]/np.sqrt(p[171]/(p[172] * p[173]))) * 1e+6         # ICC_r, ICC_DCa, ICC_F, ICC_r, ICC_DCa, ICC_KB_pos, ICC_B_tot
+
+    ICC_alpha = 1 / (2 * p[175] * p[170])                                                                                        # ICC_Vcell, ICC_F
+    DCA2_pos_m_1 = (1 - np.heaviside(V - p[182], 0)) * (-(p[176] * ICC_alpha * I_C * 1e-6) - ((CA2_pos_m - p[178])/p[177]))      # VCa, ICC_f, ICC_Ca2_pos_m_eq, ICC_tau_Ca
+    DCA2_pos_m_2 = np.heaviside(V - p[182], 0) * (-(CA2_pos_m - p[178])/p[177])                                                  # VCa, ICC_Ca2_pos_m_eq, ICC_tau_Ca
+
+    # Calculate differentials
+
+    SHL1_m_inf = 1 / (1 + np.exp(-(V - p[1])/p[2]))                                                                              # SHL1_m_inf_Veq, SHL1_m_inf_ka
+    SHL1_tau_m = p[5] / (np.exp(-(V - p[6])/p[7]) + np.exp((V - p[8])/p[9])) + p[10]                                             # SHL1_tau_m_a, SHL1_tau_m_b, SHL1_tau_m_c, SHL1_tau_m_d, SHL1_tau_m_e, SHL1_tau_m_f
+    SHL1_h_f_inf = 1 / (1 + np.exp((V - p[3])/p[4]))                                                                             # SHL1_h_inf_Veq, SHL1_h_inf_ki
+    SHL1_h_s_inf = 1 / (1 + np.exp((V - p[3])/p[4]))                                                                             # SHL1_h_inf_Veq, SHL1_h_inf_ki
+    SHL1_tau_h_f = p[11] / (1 + np.exp((V - p[12])/p[13])) + p[14]                                                               # SHL1_tau_h_f_a, SHL1_tau_h_f_b, SHL1_tau_h_f_c, SHL1_tau_h_f_d
+    SHL1_tau_h_s = p[15] / (1 + np.exp((V - p[16])/p[17])) + p[18]                                                               # SHL1_tau_h_s_a, SHL1_tau_h_s_b, SHL1_tau_h_s_c, SHL1_tau_h_s_d
+
+    KVS1_m_inf = 1 / (1 + np.exp(-(V - p[32])/p[33]))                                                                            # KVS1_m_inf_Veq, KVS1_m_inf_ka
+    KVS1_h_inf = 1 / (1 + np.exp((V - p[34])/p[35]))                                                                             # KVS1_h_inf_Veq, KVS1_h_inf_ki
+    KVS1_tau_m = p[36] / (1 + np.exp((V - p[37])/p[38])) + p[39]                                                                 # KVS1_tau_m_a, KVS1_tau_m_b, KVS1_tau_m_c, KVS1_tau_m_d
+    KVS1_tau_h = p[40] / (1 + np.exp((V - p[41])/p[42])) + p[43]                                                                 # KVS1_tau_h_a, KVS1_tau_h_b, KVS1_tau_h_c, KVS1_tau_h_d
+
+    SHK1_m_inf = 1 / (1 + np.exp(-(V - p[20])/p[21]))                                                                            # SHK1_m_inf_Veq, SHK1_m_inf_ka
+    SHK1_h_inf = 1 / (1 + np.exp((V - p[22])/p[23]))                                                                             # SHK1_h_inf_Veq, SHK1_h_inf_ki
+    SHK1_tau_m = p[24] / (np.exp(-(V - p[25])/p[26]) + np.exp((V - p[27]) / p[28])) + p[29]                                      # SHK1_tau_m_a, SHK1_tau_m_b, SHK1_tau_m_c, SHK1_tau_m_d, SHK1_tau_m_e, SHK1_tau_m_f
+    SHK1_tau_h = p[30]                                                                                                           # SHK1_tau_h_a
+
+    KQT3_m_f_inf = 1 / (1 + np.exp(-(V - p[45])/p[46]))                                                                          # KQT3_m_inf_Veq, KQT3_m_inf_ka
+    KQT3_m_s_inf = 1 / (1 + np.exp(-(V - p[45])/p[46]))                                                                          # KQT3_m_inf_Veq, KQT3_m_inf_ka
+    KQT3_tau_m_f = p[55] / (1 + ((V + p[56]) / p[57])**2)                                                                        # KQT3_tau_m_f_a, KQT3_tau_m_f_b, KQT3_tau_m_f_c
+    KQT3_tau_m_s = p[58] + p[59] / (1 + 10**(-p[60] * (p[61] - V))) + p[62] / (1 + 10**(-p[63] * (p[64] + V)))                   # KQT3_tau_m_s_a, KQT3_tau_m_s_b, KQT3_tau_m_s_c, KQT3_tau_m_s_d, KQT3_tau_m_s_e, KQT3_tau_m_s_f, KQT3_tau_m_s_g
+    KQT3_w_inf = p[49] + p[50] / (1 + np.exp((V - p[47])/p[48]))                                                                 # KQT3_w_inf_a, KQT3_w_inf_b, KQT3_w_inf_Veq, KQT3_w_inf_ki
+    KQT3_s_inf = p[53] + p[54] / (1 + np.exp((V - p[51])/p[52]))                                                                 # KQT3_s_inf_a, KQT3_s_inf_b, KQT3_s_inf_Veq, KQT3_s_inf_ki
+    KQT3_tau_w = p[65] + p[66] / (1 + ((V - p[67]) / p[68])**2)                                                                  # KQT3_tau_w_a, KQT3_tau_w_b, KQT3_tau_w_c, KQT3_tau_w_d
+    KQT3_tau_s = p[69]                                                                                                           # KQT3_tau_s_a
+
+    EGL2_m_inf = 1 / (1 + np.exp(-(V - p[71])/p[72]))                                                                            # EGL2_m_inf_Veq, EGL2_m_inf_ka
+    EGL2_tau_m = p[73] / (1 + np.exp((V - p[74]) / p[75])) + p[76]                                                               # EGL2_tau_m_a, EGL2_tau_m_b, EGL2_tau_m_c, EGL2_tau_m_d
+
+    EGL36_m_f_inf = 1 / (1 + np.exp(-(V - p[78])/p[79]))                                                                         # EGL36_m_inf_Veq, EGL36_m_inf_ka
+    EGL36_m_m_inf = 1 / (1 + np.exp(-(V - p[78])/p[79]))                                                                         # EGL36_m_inf_Veq, EGL36_m_inf_ka
+    EGL36_m_s_inf = 1 / (1 + np.exp(-(V - p[78])/p[79]))                                                                         # EGL36_m_inf_Veq, EGL36_m_inf_ka
+    EGL36_tau_m_f = p[82]                                                                                                        # EGL36_tau_m_f_a
+    EGL36_tau_m_m = p[81]                                                                                                        # EGL36_tau_m_m_a
+    EGL36_tau_m_s = p[80]                                                                                                        # EGL36_tau_m_s_a
+
+    IRK_m_inf = 1 / (1 + np.exp((V - p[84])/p[85]))                                                                              # IRK_m_inf_Veq, IRK_m_inf_ka
+    IRK_tau_m = p[86] / (np.exp(-(V - p[87])/p[88]) + np.exp((V - p[89])/p[90])) + p[91]                                         # IRK_tau_m_a, IRK_tau_m_b, IRK_tau_m_c, IRK_tau_m_d, IRK_tau_m_e, IRK_tau_m_f
+
+    EGL19_m_inf = 1 / (1 + np.exp(-(V - p[93])/p[94]))                                                                           # EGL19_m_inf_Veq, EGL19_m_inf_ka
+    EGL19_tau_m = (p[103] * np.exp(-((V - p[104])/p[105])**2)) + (p[106] * np.exp(-((V - p[107])/p[108])**2)) + p[109]           # EGL19_tau_m_a, EGL19_tau_m_b, EGL19_tau_m_c, EGL19_tau_m_d, EGL19_tau_m_e, EGL19_tau_m_f, EGL19_tau_m_g
+    EGL19_h_inf = (p[99] / (1 + np.exp(-(V - p[95])/p[96])) + p[100]) * (p[101] / (1 + np.exp((V - p[97])/p[98])) + p[102])      # EGL19_h_inf_a, EGL19_h_inf_Veq, EGL19_h_inf_ki, EGL19_h_inf_b, EGL19_h_inf_c, EGL19_h_inf_Veq_b, EGL19_h_inf_ki_b, EGL19_h_inf_d
+    EGL19_tau_h = p[110] * (p[111] / (1 + np.exp((V-p[112])/p[113])) + p[114] / (1 + np.exp((V -p[115])/p[116])) + p[117])       # EGL19_tau_h_a, EGL19_tau_h_b, EGL19_tau_h_c, EGL19_tau_h_d, EGL19_tau_h_e, EGL19_tau_h_f, EGL19_tau_h_g, EGL19_tau_h_h
+
+    UNC2_m_inf = 1 / (1 + np.exp(-(V - p[119])/p[120]))                                                                          # UNC2_m_inf_Veq, UNC2_m_inf_ka
+    UNC2_tau_m = p[123] / (np.exp(-(V - p[124])/p[125]) + np.exp((V - p[124])/p[126])) + p[127]                                  # UNC2_tau_m_a, UNC2_tau_m_b, UNC2_tau_m_c, UNC2_tau_m_b, UNC2_tau_m_d, UNC2_tau_m_e
+    UNC2_h_inf = 1 / (1 + np.exp((V - p[121])/p[122]))                                                                           # UNC2_h_inf_Veq, UNC2_h_inf_ki
+    UNC2_tau_h = p[128] / (1 + np.exp(-(V-p[129])/p[130])) + p[131] / (1 + np.exp((V-p[132])/p[133]))                            # UNC2_tau_h_a, UNC2_tau_h_b, UNC2_tau_h_c, UNC2_tau_h_d, UNC2_tau_h_e, UNC2_tau_h_f
+
+    CCA1_m_inf = 1 / (1 + np.exp(-(V - p[135])/p[136]))                                                                          # CCA1_m_inf_Veq, CCA1_m_inf_ka
+    CCA1_h_inf = 1 / (1 + np.exp((V - p[137])/p[138]))                                                                           # CCA1_h_inf_Veq, CCA1_h_inf_ki
+    CCA1_tau_m = p[139] / (1 + np.exp(-(V-p[140])/p[141])) + p[142]                                                              # CCA1_tau_m_a, CCA1_tau_m_b, CCA1_tau_m_c, CCA1_tau_m_d
+    CCA1_tau_h = p[143] / (1 + np.exp((V-p[144])/p[145])) + p[146]                                                               # CCA1_tau_h_a, CCA1_tau_h_b, CCA1_tau_h_c, CCA1_tau_h_d
+
+    EGL19_alpha = EGL19_m_inf/EGL19_tau_m
+    EGL19_beta = 1/EGL19_tau_m - EGL19_alpha
+    UNC2_alpha = UNC2_m_inf/UNC2_tau_m
+    UNC2_beta = 1/UNC2_tau_m - UNC2_alpha
+
+    SLO1_k_neg_o = (p[150] * np.exp(-p[148] * V)) * (1/(1 + (CA2_pos_n/p[154])**p[155]))                                         # SLO1_w0_neg, SLO1_wyx, SLO1_Kyx, SLO1_nyx
+    SLO1_k_neg_c = (p[150] * np.exp(-p[148] * V)) * (1/(1 + (p[174]/p[154])**p[155]))                                            # SLO1_w0_neg, SLO1_wyx, ICC_Ca2_pos_n_ci, SLO1_Kyx, SLO1_nyx
+    SLO1_k_pos_o = (p[151] * np.exp(-p[149] * V)) * (1/(1 + (p[152]/CA2_pos_n)**p[153]))                                         # SLO1_w0_pos, SLO1_wxy, SLO1_Kxy, SLO1_nxy
+
+    SLO2_k_neg_o = (p[159] * np.exp(-p[157] * V)) * (1/(1 + (CA2_pos_n/p[163])**p[164]))                                         # SLO2_w0_neg, SLO2_wyx, SLO2_Kyx, SLO2_nyx
+    SLO2_k_neg_c = (p[159] * np.exp(-p[157] * V)) * (1/(1 + (p[174]/p[163])**p[164]))                                            # SLO2_w0_neg, SLO2_wyx, ICC_Ca2_pos_n_ci, SLO2_Kyx, SLO2_nyx
+    SLO2_k_pos_o = (p[160] * np.exp(-p[158] * V)) * (1/(1 + (p[161]/CA2_pos_n)**p[162]))                                         # SLO2_w0_pos, SLO2_wxy, SLO2_Kxy, SLO2_nxy
+
+    SLO1_EGL19_m_inf = (m_EGL19 * SLO1_k_pos_o * (EGL19_alpha + EGL19_beta + SLO1_k_neg_c)) / ((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + EGL19_alpha) + EGL19_beta * SLO1_k_neg_c)
+    SLO1_EGL19_tau_m = (EGL19_alpha + EGL19_beta + SLO1_k_neg_c) / ((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + EGL19_alpha) + EGL19_beta * SLO1_k_neg_c)
+    SLO1_UNC2_m_inf = (m_UNC2 * SLO1_k_pos_o * (UNC2_alpha + UNC2_beta + SLO1_k_neg_c)) / ((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + UNC2_alpha) + UNC2_beta * SLO1_k_neg_c)
+    SLO1_UNC2_tau_m = (UNC2_alpha + UNC2_beta + SLO1_k_neg_c) / ((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + UNC2_alpha) + UNC2_beta * SLO1_k_neg_c)
+
+    SLO2_EGL19_m_inf = (m_EGL19 * SLO2_k_pos_o * (EGL19_alpha + EGL19_beta + SLO2_k_neg_c)) / ((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + EGL19_alpha) + EGL19_beta * SLO2_k_neg_c)
+    SLO2_EGL19_tau_m = (EGL19_alpha + EGL19_beta + SLO2_k_neg_c) / ((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + EGL19_alpha) + EGL19_beta * SLO2_k_neg_c)
+    SLO2_UNC2_m_inf = (m_UNC2 * SLO2_k_pos_o * (UNC2_alpha + UNC2_beta + SLO2_k_neg_c)) / ((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + UNC2_alpha) + UNC2_beta * SLO2_k_neg_c)
+    SLO2_UNC2_tau_m = (UNC2_alpha + UNC2_beta + SLO2_k_neg_c) / ((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + UNC2_alpha) + UNC2_beta * SLO2_k_neg_c)
+
+    KCNL_m_inf = CA2_pos_m / (p[166] + CA2_pos_m)                                                                                # KCNL_KCa
+    KCNL_tau_m = p[167]                                                                                                          # KCNL_tau_m_a
+
+    if t < 1000 or t > 6000:
+
+        Iext = 0
+
+    else:
+
+        Iext = p[215]
+
+    dV = (-(I_K + I_C + I_KCa + I_L) + Iext) / p[214]
+    Dm_SHL1 = (SHL1_m_inf - m_SHL1) / SHL1_tau_m
+    Dh_SHL1_f = (SHL1_h_f_inf - h_SHL1_f) / SHL1_tau_h_f
+    Dh_SHL1_s = (SHL1_h_s_inf - h_SHL1_s) / SHL1_tau_h_s
+    Dm_KVS1 = (KVS1_m_inf - m_KVS1) / KVS1_tau_m
+    Dh_KVS1 = (KVS1_h_inf - h_KVS1) / KVS1_tau_h
+    Dm_SHK1 = (SHK1_m_inf - m_SHK1) / SHK1_tau_m
+    Dh_SHK1 = (SHK1_h_inf - h_SHK1) / SHK1_tau_h
+    Dm_KQT3_f = (KQT3_m_f_inf - m_KQT3_f) / KQT3_tau_m_f
+    Dm_KQT3_s = (KQT3_m_s_inf - m_KQT3_s) / KQT3_tau_m_s
+    Dw_KQT3 = (KQT3_w_inf - w_KQT3) / KQT3_tau_w
+    Ds_KQT3 = (KQT3_s_inf - s_KQT3) / KQT3_tau_s
+    Dm_EGL2 = (EGL2_m_inf - m_EGL2) / EGL2_tau_m
+    Dm_EGL36_f = (EGL36_m_f_inf - m_EGL36_f) / EGL36_tau_m_f
+    Dm_EGL36_m = (EGL36_m_m_inf - m_EGL36_m) / EGL36_tau_m_m
+    Dm_EGL36_s = (EGL36_m_s_inf - m_EGL36_s) / EGL36_tau_m_s
+    Dm_IRK = (IRK_m_inf - m_IRK) / IRK_tau_m
+    Dm_EGL19 = (EGL19_m_inf - m_EGL19) / EGL19_tau_m
+    Dh_EGL19 = (EGL19_h_inf - h_EGL19) / EGL19_tau_h
+    Dm_UNC2 = (UNC2_m_inf - m_UNC2) / UNC2_tau_m
+    Dh_UNC2 = (UNC2_h_inf - h_UNC2) / UNC2_tau_h
+    Dm_CCA1 = (CCA1_m_inf - m_CCA1) / CCA1_tau_m
+    Dh_CCA1 = (CCA1_h_inf - h_CCA1) / CCA1_tau_h
+    Dm_SLO1_EGL19 = (SLO1_EGL19_m_inf - m_SLO1_EGL19) / SLO1_EGL19_tau_m
+    Dm_SLO1_UNC2 = (SLO1_UNC2_m_inf - m_SLO1_UNC2) / SLO1_UNC2_tau_m
+    Dm_SLO2_EGL19 = (SLO2_EGL19_m_inf - m_SLO2_EGL19) / SLO2_EGL19_tau_m
+    Dm_SLO2_UNC2 = (SLO2_UNC2_m_inf - m_SLO2_UNC2) / SLO2_UNC2_tau_m
+    Dm_KCNL = (KCNL_m_inf - m_KCNL) / KCNL_tau_m
+    DCA2_pos_m = DCA2_pos_m_1 + DCA2_pos_m_2
+
+    dy[:] = np.array([dV, Dm_SHL1, Dh_SHL1_f, Dh_SHL1_s, Dm_KVS1, Dh_KVS1, Dm_SHK1, Dh_SHK1, Dm_KQT3_f, Dm_KQT3_s, Dw_KQT3, Ds_KQT3, Dm_EGL2, Dm_EGL36_f, Dm_EGL36_m, Dm_EGL36_s, 
+        Dm_IRK, Dm_EGL19, Dh_EGL19, Dm_UNC2, Dh_UNC2, Dm_CCA1, Dh_CCA1, Dm_SLO1_EGL19, Dm_SLO1_UNC2, Dm_SLO2_EGL19, Dm_SLO2_UNC2, Dm_KCNL, DCA2_pos_m])
+
+numba_generic_model_rhs = numba.jit(generic_model_rhs)
+
+def generic_model_IV(V, p):
+
+    # Calcium Concentration
+
+    I_Ca = p[168] * np.abs((V - p[182])) * 1e-9 * 1e-3                                                                           # ICC_gsc, VCa
+    CA2_pos_n = I_Ca / (8 * np.pi * p[169] * p[171] * p[170]) * np.exp(-p[169]/np.sqrt(p[171]/(p[172] * p[173]))) * 1e+6         # ICC_r, ICC_DCa, ICC_F, ICC_r, ICC_DCa, ICC_KB_pos, ICC_B_tot                
+
+    # Calculate differentials
+
+    SHL1_m_inf = 1 / (1 + np.exp(-(V - p[1])/p[2]))                                                                              # SHL1_m_inf_Veq, SHL1_m_inf_ka
+    SHL1_h_f_inf = 1 / (1 + np.exp((V - p[3])/p[4]))                                                                             # SHL1_h_inf_Veq, SHL1_h_inf_ki
+    SHL1_h_s_inf = 1 / (1 + np.exp((V - p[3])/p[4]))                                                                             # SHL1_h_inf_Veq, SHL1_h_inf_ki
+
+    KVS1_m_inf = 1 / (1 + np.exp(-(V - p[32])/p[33]))                                                                            # KVS1_m_inf_Veq, KVS1_m_inf_ka
+    KVS1_h_inf = 1 / (1 + np.exp((V - p[34])/p[35]))                                                                             # KVS1_h_inf_Veq, KVS1_h_inf_ki
+
+    SHK1_m_inf = 1 / (1 + np.exp(-(V - p[20])/p[21]))                                                                            # SHK1_m_inf_Veq, SHK1_m_inf_ka
+    SHK1_h_inf = 1 / (1 + np.exp((V - p[22])/p[23]))                                                                             # SHK1_h_inf_Veq, SHK1_h_inf_ki
+    
+    KQT3_m_f_inf = 1 / (1 + np.exp(-(V - p[45])/p[46]))                                                                          # KQT3_m_inf_Veq, KQT3_m_inf_ka
+    KQT3_m_s_inf = 1 / (1 + np.exp(-(V - p[45])/p[46]))                                                                          # KQT3_m_inf_Veq, KQT3_m_inf_ka
+    KQT3_w_inf = p[49] + p[50] / (1 + np.exp((V - p[47])/p[48]))                                                                 # KQT3_w_inf_a, KQT3_w_inf_b, KQT3_w_inf_Veq, KQT3_w_inf_ki
+    KQT3_s_inf = p[53] + p[54] / (1 + np.exp((V - p[51])/p[52]))                                                                 # KQT3_s_inf_a, KQT3_s_inf_b, KQT3_s_inf_Veq, KQT3_s_inf_ki
+
+    EGL2_m_inf = 1 / (1 + np.exp(-(V - p[71])/p[72]))                                                                            # EGL2_m_inf_Veq, EGL2_m_inf_ka
+
+    EGL36_m_f_inf = 1 / (1 + np.exp(-(V - p[78])/p[79]))                                                                         # EGL36_m_inf_Veq, EGL36_m_inf_ka
+    EGL36_m_m_inf = 1 / (1 + np.exp(-(V - p[78])/p[79]))                                                                         # EGL36_m_inf_Veq, EGL36_m_inf_ka
+    EGL36_m_s_inf = 1 / (1 + np.exp(-(V - p[78])/p[79]))                                                                         # EGL36_m_inf_Veq, EGL36_m_inf_ka
+
+    IRK_m_inf = 1 / (1 + np.exp((V - p[84])/p[85]))                                                                              # IRK_m_inf_Veq, IRK_m_inf_ka
+
+    EGL19_m_inf = 1 / (1 + np.exp(-(V - p[93])/p[94]))                                                                           # EGL19_m_inf_Veq, EGL19_m_inf_ka
+    EGL19_tau_m = (p[103] * np.exp(-((V - p[104])/p[105])**2)) + (p[106] * np.exp(-((V - p[107])/p[108])**2)) + p[109]           # EGL19_tau_m_a, EGL19_tau_m_b, EGL19_tau_m_c, EGL19_tau_m_d, EGL19_tau_m_e, EGL19_tau_m_f, EGL19_tau_m_g
+    EGL19_h_inf = (p[99] / (1 + np.exp(-(V - p[95])/p[96])) + p[100]) * (p[101] / (1 + np.exp((V - p[97])/p[98])) + p[102])      # EGL19_h_inf_a, EGL19_h_inf_Veq, EGL19_h_inf_ki, EGL19_h_inf_b, EGL19_h_inf_c, EGL19_h_inf_Veq_b, EGL19_h_inf_ki_b, EGL19_h_inf_d
+
+    UNC2_m_inf = 1 / (1 + np.exp(-(V - p[119])/p[120]))                                                                          # UNC2_m_inf_Veq, UNC2_m_inf_ka
+    UNC2_tau_m = p[123] / (np.exp(-(V - p[124])/p[125]) + np.exp((V - p[124])/p[126])) + p[127]                                  # UNC2_tau_m_a, UNC2_tau_m_b, UNC2_tau_m_c, UNC2_tau_m_b, UNC2_tau_m_d, UNC2_tau_m_e
+    UNC2_h_inf = 1 / (1 + np.exp((V - p[121])/p[122]))                                                                           # UNC2_h_inf_Veq, UNC2_h_inf_ki
+
+    CCA1_m_inf = 1 / (1 + np.exp(-(V - p[135])/p[136]))                                                                          # CCA1_m_inf_Veq, CCA1_m_inf_ka
+    CCA1_h_inf = 1 / (1 + np.exp((V - p[137])/p[138]))                                                                           # CCA1_h_inf_Veq, CCA1_h_inf_ki
+
+    EGL19_alpha = EGL19_m_inf/EGL19_tau_m
+    EGL19_beta = 1/EGL19_tau_m - EGL19_alpha
+    UNC2_alpha = UNC2_m_inf/UNC2_tau_m
+    UNC2_beta = 1/UNC2_tau_m - UNC2_alpha
+
+    SLO1_k_neg_o = (p[150] * np.exp(-p[148] * V)) * (1/(1 + (CA2_pos_n/p[154])**p[155]))                                         # SLO1_w0_neg, SLO1_wyx, SLO1_Kyx, SLO1_nyx
+    SLO1_k_neg_c = (p[150] * np.exp(-p[148] * V)) * (1/(1 + (p[174]/p[154])**p[155]))                                            # SLO1_w0_neg, SLO1_wyx, ICC_Ca2_pos_n_ci, SLO1_Kyx, SLO1_nyx
+    SLO1_k_pos_o = (p[151] * np.exp(-p[149] * V)) * (1/(1 + (p[152]/CA2_pos_n)**p[153]))                                         # SLO1_w0_pos, SLO1_wxy, SLO1_Kxy, SLO1_nxy
+
+    SLO2_k_neg_o = (p[159] * np.exp(-p[157] * V)) * (1/(1 + (CA2_pos_n/p[163])**p[164]))                                         # SLO2_w0_neg, SLO2_wyx, SLO2_Kyx, SLO2_nyx
+    SLO2_k_neg_c = (p[159] * np.exp(-p[157] * V)) * (1/(1 + (p[174]/p[163])**p[164]))                                            # SLO2_w0_neg, SLO2_wyx, ICC_Ca2_pos_n_ci, SLO2_Kyx, SLO2_nyx
+    SLO2_k_pos_o = (p[160] * np.exp(-p[158] * V)) * (1/(1 + (p[161]/CA2_pos_n)**p[162]))                                         # SLO2_w0_pos, SLO2_wxy, SLO2_Kxy, SLO2_nxy
+
+    SLO1_EGL19_m_inf = (EGL19_m_inf * SLO1_k_pos_o * (EGL19_alpha + EGL19_beta + SLO1_k_neg_c)) / ((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + EGL19_alpha) + EGL19_beta * SLO1_k_neg_c)
+    SLO1_UNC2_m_inf = (UNC2_m_inf * SLO1_k_pos_o * (UNC2_alpha + UNC2_beta + SLO1_k_neg_c)) / ((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + UNC2_alpha) + UNC2_beta * SLO1_k_neg_c)
+
+    SLO2_EGL19_m_inf = (EGL19_m_inf * SLO2_k_pos_o * (EGL19_alpha + EGL19_beta + SLO2_k_neg_c)) / ((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + EGL19_alpha) + EGL19_beta * SLO2_k_neg_c)
+    SLO2_UNC2_m_inf = (UNC2_m_inf * SLO2_k_pos_o * (UNC2_alpha + UNC2_beta + SLO2_k_neg_c)) / ((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + UNC2_alpha) + UNC2_beta * SLO2_k_neg_c)
+
+    KCNL_m_inf = p[178] / (p[166] + p[178])                                                                                # KCNL_KCa                                                                                
+
+    # Voltage Gated Potassium Currents
+
+    I_SHL1 = p[0] * SHL1_m_inf**3 * (0.7 * SHL1_h_f_inf + 0.3 * SHL1_h_s_inf) * (V - p[181])                                                 
+    I_KVS1 = p[31] * KVS1_m_inf * KVS1_h_inf * (V - p[181])                                                                              
+    I_SHK1 = p[19] * SHK1_m_inf * SHK1_h_inf * (V - p[181])                                                                              
+    I_KQT3 = p[44] * (0.7 * KQT3_m_f_inf + 0.3 * KQT3_m_s_inf) * KQT3_w_inf * KQT3_s_inf * (V - p[181])                                          
+    I_EGL2 = p[70] * EGL2_m_inf * (V - p[181])                                                                                       
+    I_EGL36 = p[77] * (0.33 * EGL36_m_f_inf + 0.36 * EGL36_m_m_inf + 0.39 * EGL36_m_s_inf) * (V - p[181])                                    
+    I_IRK = p[83] * IRK_m_inf * (V - p[181])                                                                                         
+
+    I_K = I_SHL1 + I_KVS1 + I_SHK1 + I_KQT3 + I_EGL2 + I_EGL36 + I_IRK
+
+    # Voltage Gated Calcium Currents
+
+    I_EGL19 = p[92] * EGL19_m_inf * EGL19_h_inf * (V - p[182])                                                                           
+    I_UNC2 = p[118] * UNC2_m_inf * UNC2_h_inf * (V - p[182])                                                                             
+    I_CCA1 = p[134] * CCA1_m_inf**2 * CCA1_h_inf * (V - p[182])                                                                          
+
+    I_C = I_EGL19 + I_UNC2 + I_CCA1
+
+    # Calcium Regulated Potassium Currents
+
+    I_SLO1_EGL19 = p[147] * SLO1_EGL19_m_inf * EGL19_h_inf * (V - p[181])                                                                
+    I_SLO1_UNC2 = p[147] * SLO1_UNC2_m_inf * UNC2_h_inf * (V - p[181])                                                                   
+    I_SLO2_EGL19 = p[156] * SLO2_EGL19_m_inf * EGL19_h_inf * (V - p[181])                                                                
+    I_SLO2_UNC2 = p[156] * SLO2_UNC2_m_inf * UNC2_h_inf * (V - p[181])                                                                   
+    I_KCNL = p[165] * KCNL_m_inf * (V - p[181])                                                                                      
+
+    I_KCa = I_SLO1_EGL19 + I_SLO1_UNC2 + I_SLO2_EGL19 + I_SLO2_UNC2 + I_KCNL
+
+    # Leak Currents
+
+    I_NCA = p[179] * (V - p[183])                                                                                                
+    I_LEAK = p[180] * (V - p[184])                                                                                               
+
+    I_L = I_NCA + I_LEAK
+
+    totalCurr = I_K + I_C + I_KCa + I_L
+
+    return totalCurr
+
+def xinf_pos(x):
+
+    return torch.sigmoid(-x)
+
+def xinf_neg(x):
+
+    return torch.sigmoid(x)
+
+def generic_model_IV_torch_scaled(V, p):
+
+    # Calcium Concentration
+
+    I_Ca = p[:, 168] * torch.abs((V - p[:, 182])) * 1e-8 * 1e-1
+    CA2_pos_n = I_Ca / (8 * torch.pi * p[:, 169] * p[:, 171] * p[:, 170]) * torch.exp(-p[:, 169]/torch.sqrt(p[:, 171]/(p[:, 172] * p[:, 173]))) * 1e+6
+
+    # Calculate differentials
+    SHL1_m_inf = xinf_neg((V - p[:, 1])/(p[:, 2] + eps))
+    SHL1_h_f_inf = xinf_pos((V - p[:, 3])/(p[:, 4] + eps))
+    SHL1_h_s_inf = xinf_pos((V - p[:, 3])/(p[:, 4] + eps))
+
+    KVS1_m_inf = xinf_neg((V - p[:, 32])/(p[:, 33] + eps))
+    KVS1_h_inf = xinf_pos((V - p[:, 34])/(p[:, 35] + eps))
+
+    SHK1_m_inf = xinf_neg((V - p[:, 20])/(p[:, 21] + eps))
+    SHK1_h_inf = xinf_pos((V - p[:, 22])/(p[:, 23] + eps))
+    
+    KQT3_m_f_inf = xinf_neg((V - p[:, 45])/(p[:, 46] + eps))
+    KQT3_m_s_inf = xinf_neg((V - p[:, 45])/(p[:, 46] + eps))
+    KQT3_w_inf = p[:, 49] + p[:, 50] * xinf_pos((V - p[:, 47])/(p[:, 48] + eps))
+    KQT3_s_inf = p[:, 53] + p[:, 54] * xinf_pos((V - p[:, 51])/(p[:, 52] + eps))
+
+    EGL2_m_inf = xinf_neg((V - p[:, 71])/(p[:, 72] + eps))
+
+    EGL36_m_f_inf = xinf_neg((V - p[:, 78])/(p[:, 79] + eps))
+    EGL36_m_m_inf = xinf_neg((V - p[:, 78])/(p[:, 79] + eps))
+    EGL36_m_s_inf = xinf_neg((V - p[:, 78])/(p[:, 79] + eps))
+
+    IRK_m_inf = xinf_pos((V - p[:, 84])/(p[:, 85] + eps))
+
+    EGL19_m_inf = xinf_neg((V - p[:, 93])/(p[:, 94] + eps))
+    EGL19_tau_m = (p[:, 103] * torch.exp(-((V - p[:, 104])/(p[:, 105] + eps))**2)) + (p[:, 106] * torch.exp(-((V - p[:, 107])/(p[:, 108] + eps))**2)) + p[:, 109]
+    EGL19_h_inf = (p[:, 99] * xinf_neg((V - p[:, 95])/(p[:, 96] + eps)) + p[:, 100]) * (p[:, 101] * xinf_pos((V - p[:, 97])/(p[:, 98] + eps)) + p[:, 102])
+    
+    UNC2_m_inf = xinf_neg((V - p[:, 119])/(p[:, 120] + eps))
+    UNC2_tau_m = p[:, 123] / (torch.exp(-(V - p[:, 124])/(p[:, 125] + eps)) + torch.exp((V - p[:, 124])/(p[:, 126] + eps))) + p[:, 127]
+    UNC2_h_inf = xinf_pos((V - p[:, 121])/(p[:, 122] + eps))
+
+    CCA1_m_inf = xinf_neg((V - p[:, 135])/(p[:, 136] + eps))
+    CCA1_h_inf = xinf_pos((V - p[:, 137])/(p[:, 138] + eps))
+
+    EGL19_alpha = EGL19_m_inf/(EGL19_tau_m + eps)
+    EGL19_beta = 1/(EGL19_tau_m + eps) - EGL19_alpha
+    UNC2_alpha = UNC2_m_inf/(UNC2_tau_m + eps)
+    UNC2_beta = 1/(UNC2_tau_m + eps) - UNC2_alpha
+
+    SLO1_k_neg_o = (p[:, 150] * torch.exp(-p[:, 148] * V)) * (1/(1 + (CA2_pos_n/p[:, 154])**p[:, 155]))
+    SLO1_k_neg_c = (p[:, 150] * torch.exp(-p[:, 148] * V)) * (1/(1 + (p[:, 174]/p[:, 154])**p[:, 155]))           
+    SLO1_k_pos_o = (p[:, 151] * torch.exp(-p[:, 149] * V)) * (1/(1 + (p[:, 152]/CA2_pos_n)**p[:, 153]))                   
+
+    SLO2_k_neg_o = (p[:, 159] * torch.exp(-p[:, 157] * V)) * (1/(1 + (CA2_pos_n/p[:, 163])**p[:, 164]))
+    SLO2_k_neg_c = (p[:, 159] * torch.exp(-p[:, 157] * V)) * (1/(1 + (p[:, 174]/p[:, 163])**p[:, 164]))                                        
+    SLO2_k_pos_o = (p[:, 160] * torch.exp(-p[:, 158] * V)) * (1/(1 + (p[:, 161]/CA2_pos_n)**p[:, 162]))
+
+    SLO1_EGL19_m_inf = (EGL19_m_inf * SLO1_k_pos_o * (EGL19_alpha + EGL19_beta + SLO1_k_neg_c)) / (((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + EGL19_alpha) + EGL19_beta * SLO1_k_neg_c) + eps)
+    SLO1_UNC2_m_inf = (UNC2_m_inf * SLO1_k_pos_o * (UNC2_alpha + UNC2_beta + SLO1_k_neg_c)) / (((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + UNC2_alpha) + UNC2_beta * SLO1_k_neg_c) + eps)
+
+    SLO2_EGL19_m_inf = (EGL19_m_inf * SLO2_k_pos_o * (EGL19_alpha + EGL19_beta + SLO2_k_neg_c)) / (((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + EGL19_alpha) + EGL19_beta * SLO2_k_neg_c) + eps)
+    SLO2_UNC2_m_inf = (UNC2_m_inf * SLO2_k_pos_o * (UNC2_alpha + UNC2_beta + SLO2_k_neg_c)) / (((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + UNC2_alpha) + UNC2_beta * SLO2_k_neg_c) + eps)
+
+    KCNL_m_inf = p[:, 178] / (p[:, 166] + p[:, 178] + eps)
+
+    # Voltage Gated Potassium Currents
+
+    I_SHL1 = p[:, 0] * SHL1_m_inf**3 * (0.7 * SHL1_h_f_inf + 0.3 * SHL1_h_s_inf) * (V - p[:, 181])                                                 
+    I_KVS1 = p[:, 31] * KVS1_m_inf * KVS1_h_inf * (V - p[:, 181])                                                                              
+    I_SHK1 = p[:, 19] * SHK1_m_inf * SHK1_h_inf * (V - p[:, 181])                                                                              
+    I_KQT3 = p[:, 44] * (0.7 * KQT3_m_f_inf + 0.3 * KQT3_m_s_inf) * KQT3_w_inf * KQT3_s_inf * (V - p[:, 181])                                          
+    I_EGL2 = p[:, 70] * EGL2_m_inf * (V - p[:, 181])                                                                                       
+    I_EGL36 = p[:, 77] * (0.33 * EGL36_m_f_inf + 0.36 * EGL36_m_m_inf + 0.39 * EGL36_m_s_inf) * (V - p[:, 181])                                    
+    I_IRK = p[:, 83] * IRK_m_inf * (V - p[:, 181])                                                                                         
+
+    I_K = I_SHL1 + I_KVS1 + I_SHK1 + I_KQT3 + I_EGL2 + I_EGL36 + I_IRK
+
+    # Voltage Gated Calcium Currents
+
+    I_EGL19 = p[:, 92] * EGL19_m_inf * EGL19_h_inf * (V - p[:, 182])                                                                           
+    I_UNC2 = p[:, 118] * UNC2_m_inf * UNC2_h_inf * (V - p[:, 182])                                                                             
+    I_CCA1 = p[:, 134] * CCA1_m_inf**2 * CCA1_h_inf * (V - p[:, 182])                                                                          
+
+    I_C = I_EGL19 + I_UNC2 + I_CCA1
+
+    # Calcium Regulated Potassium Currents
+
+    I_SLO1_EGL19 = p[:, 147] * SLO1_EGL19_m_inf * EGL19_h_inf * (V - p[:, 181])                                                                
+    I_SLO1_UNC2 = p[:, 147] * SLO1_UNC2_m_inf * UNC2_h_inf * (V - p[:, 181])                                                                   
+    I_SLO2_EGL19 = p[:, 156] * SLO2_EGL19_m_inf * EGL19_h_inf * (V - p[:, 181])                                                                
+    I_SLO2_UNC2 = p[:, 156] * SLO2_UNC2_m_inf * UNC2_h_inf * (V - p[:, 181])                                                                   
+    I_KCNL = p[:, 165] * KCNL_m_inf * (V - p[:, 181])                                                                                      
+
+    I_KCa = I_SLO1_EGL19 + I_SLO1_UNC2 + I_SLO2_EGL19 + I_SLO2_UNC2 + I_KCNL
+
+    # Leak Currents
+
+    I_NCA = p[:, 179] * (V - p[:, 183])                                                                                                
+    I_LEAK = p[:, 180] * (V - p[:, 184])                                                                                               
+
+    I_L = I_NCA + I_LEAK
+
+    totalCurr = I_K + I_C + I_KCa + I_L
+
+    return totalCurr
+
+def generic_model_IV_torch_unscaled(V, p):
+
+    # Calcium Concentration
+
+    I_Ca = p[:, 168] * torch.abs((V - p[:, 182])) * 1e-9 * 1e-3                                                                           # ICC_gsc, VCa
+    CA2_pos_n = I_Ca / (8 * torch.pi * p[:, 169] * p[:, 171] * p[:, 170]) * torch.exp(-p[:, 169]/torch.sqrt(p[:, 171]/(p[:, 172] * p[:, 173]))) * 1e+6        # ICC_r, ICC_DCa, ICC_F, ICC_r, ICC_DCa, ICC_KB_pos, ICC_B_tot                
+
+    # Calculate differentials
+
+    SHL1_m_inf = 1 / (1 + torch.exp(-(V - p[:, 1])/p[:, 2]))                                                                              # SHL1_m_inf_Veq, SHL1_m_inf_ka
+    SHL1_h_f_inf = 1 / (1 + torch.exp((V - p[:, 3])/p[:, 4]))                                                                             # SHL1_h_inf_Veq, SHL1_h_inf_ki
+    SHL1_h_s_inf = 1 / (1 + torch.exp((V - p[:, 3])/p[:, 4]))                                                                             # SHL1_h_inf_Veq, SHL1_h_inf_ki
+
+    KVS1_m_inf = 1 / (1 + torch.exp(-(V - p[:, 32])/p[:, 33]))                                                                            # KVS1_m_inf_Veq, KVS1_m_inf_ka
+    KVS1_h_inf = 1 / (1 + torch.exp((V - p[:, 34])/p[:, 35]))                                                                             # KVS1_h_inf_Veq, KVS1_h_inf_ki
+
+    SHK1_m_inf = 1 / (1 + torch.exp(-(V - p[:, 20])/p[:, 21]))                                                                            # SHK1_m_inf_Veq, SHK1_m_inf_ka
+    SHK1_h_inf = 1 / (1 + torch.exp((V - p[:, 22])/p[:, 23]))                                                                             # SHK1_h_inf_Veq, SHK1_h_inf_ki
+    
+    KQT3_m_f_inf = 1 / (1 + torch.exp(-(V - p[:, 45])/p[:, 46]))                                                                          # KQT3_m_inf_Veq, KQT3_m_inf_ka
+    KQT3_m_s_inf = 1 / (1 + torch.exp(-(V - p[:, 45])/p[:, 46]))                                                                          # KQT3_m_inf_Veq, KQT3_m_inf_ka
+    KQT3_w_inf = p[:, 49] + p[:, 50] / (1 + torch.exp((V - p[:, 47])/p[:, 48]))                                                                 # KQT3_w_inf_a, KQT3_w_inf_b, KQT3_w_inf_Veq, KQT3_w_inf_ki
+    KQT3_s_inf = p[:, 53] + p[:, 54] / (1 + torch.exp((V - p[:, 51])/p[:, 52]))                                                                 # KQT3_s_inf_a, KQT3_s_inf_b, KQT3_s_inf_Veq, KQT3_s_inf_ki
+
+    EGL2_m_inf = 1 / (1 + torch.exp(-(V - p[:, 71])/p[:, 72]))                                                                            # EGL2_m_inf_Veq, EGL2_m_inf_ka
+
+    EGL36_m_f_inf = 1 / (1 + torch.exp(-(V - p[:, 78])/p[:, 79]))                                                                         # EGL36_m_inf_Veq, EGL36_m_inf_ka
+    EGL36_m_m_inf = 1 / (1 + torch.exp(-(V - p[:, 78])/p[:, 79]))                                                                         # EGL36_m_inf_Veq, EGL36_m_inf_ka
+    EGL36_m_s_inf = 1 / (1 + torch.exp(-(V - p[:, 78])/p[:, 79]))                                                                         # EGL36_m_inf_Veq, EGL36_m_inf_ka
+
+    IRK_m_inf = 1 / (1 + torch.exp((V - p[:, 84])/p[:, 85]))                                                                              # IRK_m_inf_Veq, IRK_m_inf_ka
+
+    EGL19_m_inf = 1 / (1 + torch.exp(-(V - p[:, 93])/p[:, 94]))                                                                           # EGL19_m_inf_Veq, EGL19_m_inf_ka
+    EGL19_tau_m = (p[:, 103] * torch.exp(-((V - p[:, 104])/p[:, 105])**2)) + (p[:, 106] * torch.exp(-((V - p[:, 107])/p[:, 108])**2)) + p[:, 109]           # EGL19_tau_m_a, EGL19_tau_m_b, EGL19_tau_m_c, EGL19_tau_m_d, EGL19_tau_m_e, EGL19_tau_m_f, EGL19_tau_m_g
+    EGL19_h_inf = (p[:, 99] / (1 + torch.exp(-(V - p[:, 95])/p[:, 96])) + p[:, 100]) * (p[:, 101] / (1 + torch.exp((V - p[:, 97])/p[:, 98])) + p[:, 102])      # EGL19_h_inf_a, EGL19_h_inf_Veq, EGL19_h_inf_ki, EGL19_h_inf_b, EGL19_h_inf_c, EGL19_h_inf_Veq_b, EGL19_h_inf_ki_b, EGL19_h_inf_d
+
+    UNC2_m_inf = 1 / (1 + torch.exp(-(V - p[:, 119])/p[:, 120]))                                                                          # UNC2_m_inf_Veq, UNC2_m_inf_ka
+    UNC2_tau_m = p[:, 123] / (torch.exp(-(V - p[:, 124])/p[:, 125]) + torch.exp((V - p[:, 124])/p[:, 126])) + p[:, 127]                                  # UNC2_tau_m_a, UNC2_tau_m_b, UNC2_tau_m_c, UNC2_tau_m_b, UNC2_tau_m_d, UNC2_tau_m_e
+    UNC2_h_inf = 1 / (1 + torch.exp((V - p[:, 121])/p[:, 122]))                                                                           # UNC2_h_inf_Veq, UNC2_h_inf_ki
+
+    CCA1_m_inf = 1 / (1 + torch.exp(-(V - p[:, 135])/p[:, 136]))                                                                          # CCA1_m_inf_Veq, CCA1_m_inf_ka
+    CCA1_h_inf = 1 / (1 + torch.exp((V - p[:, 137])/p[:, 138]))                                                                           # CCA1_h_inf_Veq, CCA1_h_inf_ki
+
+    EGL19_alpha = EGL19_m_inf/(EGL19_tau_m + eps)
+    EGL19_beta = 1/(EGL19_tau_m + eps) - EGL19_alpha
+    UNC2_alpha = UNC2_m_inf/(UNC2_tau_m + eps)
+    UNC2_beta = 1/(UNC2_tau_m + eps) - UNC2_alpha
+
+    SLO1_k_neg_o = (p[:, 150] * torch.exp(-p[:, 148] * V)) * (1/(1 + (CA2_pos_n/p[:, 154])**p[:, 155]))                                         # SLO1_w0_neg, SLO1_wyx, SLO1_Kyx, SLO1_nyx
+    SLO1_k_neg_c = (p[:, 150] * torch.exp(-p[:, 148] * V)) * (1/(1 + (p[:, 174]/p[:, 154])**p[:, 155]))                                            # SLO1_w0_neg, SLO1_wyx, ICC_Ca2_pos_n_ci, SLO1_Kyx, SLO1_nyx
+    SLO1_k_pos_o = (p[:, 151] * torch.exp(-p[:, 149] * V)) * (1/(1 + (p[:, 152]/CA2_pos_n)**p[:, 153]))                                         # SLO1_w0_pos, SLO1_wxy, SLO1_Kxy, SLO1_nxy
+
+    SLO2_k_neg_o = (p[:, 159] * torch.exp(-p[:, 157] * V)) * (1/(1 + (CA2_pos_n/p[:, 163])**p[:, 164]))                                         # SLO2_w0_neg, SLO2_wyx, SLO2_Kyx, SLO2_nyx
+    SLO2_k_neg_c = (p[:, 159] * torch.exp(-p[:, 157] * V)) * (1/(1 + (p[:, 174]/p[:, 163])**p[:, 164]))                                            # SLO2_w0_neg, SLO2_wyx, ICC_Ca2_pos_n_ci, SLO2_Kyx, SLO2_nyx
+    SLO2_k_pos_o = (p[:, 160] * torch.exp(-p[:, 158] * V)) * (1/(1 + (p[:, 161]/CA2_pos_n)**p[:, 162]))                                         # SLO2_w0_pos, SLO2_wxy, SLO2_Kxy, SLO2_nxy
+
+    SLO1_EGL19_m_inf = (EGL19_m_inf * SLO1_k_pos_o * (EGL19_alpha + EGL19_beta + SLO1_k_neg_c)) / (((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + EGL19_alpha) + EGL19_beta * SLO1_k_neg_c) + eps)
+    SLO1_UNC2_m_inf = (UNC2_m_inf * SLO1_k_pos_o * (UNC2_alpha + UNC2_beta + SLO1_k_neg_c)) / (((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + UNC2_alpha) + UNC2_beta * SLO1_k_neg_c) + eps)
+
+    SLO2_EGL19_m_inf = (EGL19_m_inf * SLO2_k_pos_o * (EGL19_alpha + EGL19_beta + SLO2_k_neg_c)) / (((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + EGL19_alpha) + EGL19_beta * SLO2_k_neg_c) + eps)
+    SLO2_UNC2_m_inf = (UNC2_m_inf * SLO2_k_pos_o * (UNC2_alpha + UNC2_beta + SLO2_k_neg_c)) / (((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + UNC2_alpha) + UNC2_beta * SLO2_k_neg_c) + eps)
+
+    KCNL_m_inf = p[:, 178] / (p[:, 166] + p[:, 178])                                                                                # KCNL_KCa                                                                                
+
+    # Voltage Gated Potassium Currents
+
+    I_SHL1 = p[:, 0] * SHL1_m_inf**3 * (0.7 * SHL1_h_f_inf + 0.3 * SHL1_h_s_inf) * (V - p[:, 181])                                                 
+    I_KVS1 = p[:, 31] * KVS1_m_inf * KVS1_h_inf * (V - p[:, 181])                                                                              
+    I_SHK1 = p[:, 19] * SHK1_m_inf * SHK1_h_inf * (V - p[:, 181])                                                                              
+    I_KQT3 = p[:, 44] * (0.7 * KQT3_m_f_inf + 0.3 * KQT3_m_s_inf) * KQT3_w_inf * KQT3_s_inf * (V - p[:, 181])                                          
+    I_EGL2 = p[:, 70] * EGL2_m_inf * (V - p[:, 181])                                                                                       
+    I_EGL36 = p[:, 77] * (0.33 * EGL36_m_f_inf + 0.36 * EGL36_m_m_inf + 0.39 * EGL36_m_s_inf) * (V - p[:, 181])                                    
+    I_IRK = p[:, 83] * IRK_m_inf * (V - p[:, 181])                                                                                         
+
+    I_K = I_SHL1 + I_KVS1 + I_SHK1 + I_KQT3 + I_EGL2 + I_EGL36 + I_IRK
+
+    # Voltage Gated Calcium Currents
+
+    I_EGL19 = p[:, 92] * EGL19_m_inf * EGL19_h_inf * (V - p[:, 182])                                                                           
+    I_UNC2 = p[:, 118] * UNC2_m_inf * UNC2_h_inf * (V - p[:, 182])                                                                             
+    I_CCA1 = p[:, 134] * CCA1_m_inf**2 * CCA1_h_inf * (V - p[:, 182])                                                                          
+
+    I_C = I_EGL19 + I_UNC2 + I_CCA1
+
+    # Calcium Regulated Potassium Currents
+
+    I_SLO1_EGL19 = p[:, 147] * SLO1_EGL19_m_inf * EGL19_h_inf * (V - p[:, 181])                                                                
+    I_SLO1_UNC2 = p[:, 147] * SLO1_UNC2_m_inf * UNC2_h_inf * (V - p[:, 181])                                                                   
+    I_SLO2_EGL19 = p[:, 156] * SLO2_EGL19_m_inf * EGL19_h_inf * (V - p[:, 181])                                                                
+    I_SLO2_UNC2 = p[:, 156] * SLO2_UNC2_m_inf * UNC2_h_inf * (V - p[:, 181])                                                                   
+    I_KCNL = p[:, 165] * KCNL_m_inf * (V - p[:, 181])                                                                                      
+
+    I_KCa = I_SLO1_EGL19 + I_SLO1_UNC2 + I_SLO2_EGL19 + I_SLO2_UNC2 + I_KCNL
+
+    # Leak Currents
+
+    I_NCA = p[:, 179] * (V - p[:, 183])                                                                                                
+    I_LEAK = p[:, 180] * (V - p[:, 184])                                                                                               
+
+    I_L = I_NCA + I_LEAK
+
+    totalCurr = I_K + I_C + I_KCa + I_L
+
+    return totalCurr
+
+def generic_model_rhs_torch_scaled_vectorized(V, y, p, iext):
+
+    # V = (128, 500, 11)
+    # y = (128, 500, 28, 11)
+    # p = (128, 216, 1, 1)
+    # iext = (128, 500, 11)
+
+    m_SHL1 = y[:, :, 0, :]
+    h_SHL1_f = y[:, :, 1, :]
+    h_SHL1_s = y[:, :, 2, :]
+    m_KVS1 = y[:, :, 3, :]
+    h_KVS1 = y[:, :, 4, :]
+    m_SHK1 = y[:, :, 5, :]
+    h_SHK1 = y[:, :, 6, :]
+    m_KQT3_f = y[:, :, 7, :]
+    m_KQT3_s = y[:, :, 8, :]
+    w_KQT3 = y[:, :, 9, :]
+    s_KQT3 = y[:, :, 10, :]
+    m_EGL2 = y[:, :, 11, :]
+    m_EGL36_f = y[:, :, 12, :]
+    m_EGL36_m = y[:, :, 13, :]
+    m_EGL36_s = y[:, :, 14, :]
+    m_IRK = y[:, :, 15, :]
+    m_EGL19 = y[:, :, 16, :]
+    h_EGL19 = y[:, :, 17, :]
+    m_UNC2 = y[:, :, 18, :]
+    h_UNC2 = y[:, :, 19, :]
+    m_CCA1 = y[:, :, 20, :]
+    h_CCA1 = y[:, :, 21, :]
+    m_SLO1_EGL19 = y[:, :, 22, :]
+    m_SLO1_UNC2 = y[:, :, 23, :]
+    m_SLO2_EGL19 = y[:, :, 24, :]
+    m_SLO2_UNC2 = y[:, :, 25, :]
+    m_KCNL = y[:, :, 26, :]
+    CA2_pos_m = y[:, :, 27, :]
+
+    # Voltage Gated Potassium Currents
+
+    I_SHL1 = p[:, 0] * m_SHL1**3 * (0.7 * h_SHL1_f + 0.3 * h_SHL1_s) * (V - p[:, 181])                                                 # SHL1_g, VK
+    I_KVS1 = p[:, 31] * m_KVS1 * h_KVS1 * (V - p[:, 181])                                                                              # KVS1_g, VK
+    I_SHK1 = p[:, 19] * m_SHK1 * h_SHK1 * (V - p[:, 181])                                                                              # SHK1_g, VK
+    I_KQT3 = p[:, 44] * (0.7 * m_KQT3_f + 0.3 * m_KQT3_s) * w_KQT3 * s_KQT3 * (V - p[:, 181])                                          # KQT3_g, Vk
+    I_EGL2 = p[:, 70] * m_EGL2 * (V - p[:, 181])                                                                                       # EGL2_g, VK
+    I_EGL36 = p[:, 77] * (0.33 * m_EGL36_f + 0.36 * m_EGL36_m + 0.39 * m_EGL36_s) * (V - p[:, 181])                                    # EGL36_g, VK
+    I_IRK = p[:, 83] * m_IRK * (V - p[:, 181])                                                                                         # IRK_g, VK
+
+    I_K = I_SHL1 + I_KVS1 + I_SHK1 + I_KQT3 + I_EGL2 + I_EGL36 + I_IRK
+
+    # Voltage Gated Calcium Currents
+
+    I_EGL19 = p[:, 92] * m_EGL19 * h_EGL19 * (V - p[:, 182])                                                                           # EGL19_g, VCa 
+    I_UNC2 = p[:, 118] * m_UNC2 * h_UNC2 * (V - p[:, 182])                                                                             # UNC2_g, VCa
+    I_CCA1 = p[:, 134] * m_CCA1**2 * h_CCA1 * (V - p[:, 182])                                                                          # CCA1_g, VCa
+
+    I_C = I_EGL19 + I_UNC2 + I_CCA1
+
+    # Calcium Regulated Potassium Currents
+
+    I_SLO1_EGL19 = p[:, 147] * m_SLO1_EGL19 * h_EGL19 * (V - p[:, 181])                                                                # SLO1_g, VK
+    I_SLO1_UNC2 = p[:, 147] * m_SLO1_UNC2 * h_UNC2 * (V - p[:, 181])                                                                   # SLO1_g, VK
+    I_SLO2_EGL19 = p[:, 156] * m_SLO2_EGL19 * h_EGL19 * (V - p[:, 181])                                                                # SLO2_g, VK
+    I_SLO2_UNC2 = p[:, 156] * m_SLO2_UNC2 * h_UNC2 * (V - p[:, 181])                                                                   # SLO2_g, VK
+    I_KCNL = p[:, 165] * m_KCNL * (V - p[:, 181])                                                                                      # KCNL_g, VK
+
+    I_KCa = I_SLO1_EGL19 + I_SLO1_UNC2 + I_SLO2_EGL19 + I_SLO2_UNC2 + I_KCNL
+
+    # Leak Currents
+
+    I_NCA = p[:, 179] * (V - p[:, 183])                                                                                                # NCA_g, VNa
+    I_LEAK = p[:, 180] * (V - p[:, 184])                                                                                               # LEAK_g, VL
+
+    I_L = I_NCA + I_LEAK                                                                                                               # KCNL_tau_m_a
+
+    dV = (-(I_K + I_C + I_KCa + I_L) + iext) / p[:, 214]
+
+    return dV
+
+def generic_model_rhs_torch_scaled_vectorized_full(V, y, p, iext):
+
+    # V = (128, 500, 11)
+    # y = (128, 500, 28, 11)
+    # p = (128, 216, 1, 1)
+    # iext = (128, 500, 11)
+
+    m_SHL1 = y[:, :, 0, :]
+    h_SHL1_f = y[:, :, 1, :]
+    h_SHL1_s = y[:, :, 2, :]
+    m_KVS1 = y[:, :, 3, :]
+    h_KVS1 = y[:, :, 4, :]
+    m_SHK1 = y[:, :, 5, :]
+    h_SHK1 = y[:, :, 6, :]
+    m_KQT3_f = y[:, :, 7, :]
+    m_KQT3_s = y[:, :, 8, :]
+    w_KQT3 = y[:, :, 9, :]
+    s_KQT3 = y[:, :, 10, :]
+    m_EGL2 = y[:, :, 11, :]
+    m_EGL36_f = y[:, :, 12, :]
+    m_EGL36_m = y[:, :, 13, :]
+    m_EGL36_s = y[:, :, 14, :]
+    m_IRK = y[:, :, 15, :]
+    m_EGL19 = y[:, :, 16, :]
+    h_EGL19 = y[:, :, 17, :]
+    m_UNC2 = y[:, :, 18, :]
+    h_UNC2 = y[:, :, 19, :]
+    m_CCA1 = y[:, :, 20, :]
+    h_CCA1 = y[:, :, 21, :]
+    m_SLO1_EGL19 = y[:, :, 22, :]
+    m_SLO1_UNC2 = y[:, :, 23, :]
+    m_SLO2_EGL19 = y[:, :, 24, :]
+    m_SLO2_UNC2 = y[:, :, 25, :]
+    m_KCNL = y[:, :, 26, :]
+    CA2_pos_m = y[:, :, 27, :]
+
+    # Voltage Gated Potassium Currents
+
+    I_SHL1 = p[:, 0] * m_SHL1**3 * (0.7 * h_SHL1_f + 0.3 * h_SHL1_s) * (V - p[:, 181])                                                 
+    I_KVS1 = p[:, 31] * m_KVS1 * h_KVS1 * (V - p[:, 181])                                                                              
+    I_SHK1 = p[:, 19] * m_SHK1 * h_SHK1 * (V - p[:, 181])                                                                              
+    I_KQT3 = p[:, 44] * (0.7 * m_KQT3_f + 0.3 * m_KQT3_s) * w_KQT3 * s_KQT3 * (V - p[:, 181])                                          
+    I_EGL2 = p[:, 70] * m_EGL2 * (V - p[:, 181])                                                                                       
+    I_EGL36 = p[:, 77] * (0.33 * m_EGL36_f + 0.36 * m_EGL36_m + 0.39 * m_EGL36_s) * (V - p[:, 181])                                    
+    I_IRK = p[:, 83] * m_IRK * (V - p[:, 181])                                                                                         
+
+    I_K = I_SHL1 + I_KVS1 + I_SHK1 + I_KQT3 + I_EGL2 + I_EGL36 + I_IRK
+
+    # Voltage Gated Calcium Currents
+
+    I_EGL19 = p[:, 92] * m_EGL19 * h_EGL19 * (V - p[:, 182])                                                                           
+    I_UNC2 = p[:, 118] * m_UNC2 * h_UNC2 * (V - p[:, 182])                                                                             
+    I_CCA1 = p[:, 134] * m_CCA1**2 * h_CCA1 * (V - p[:, 182])                                                                          
+
+    I_C = I_EGL19 + I_UNC2 + I_CCA1
+
+    # Calcium Regulated Potassium Currents
+
+    I_SLO1_EGL19 = p[:, 147] * m_SLO1_EGL19 * h_EGL19 * (V - p[:, 181])                                                                
+    I_SLO1_UNC2 = p[:, 147] * m_SLO1_UNC2 * h_UNC2 * (V - p[:, 181])                                                                   
+    I_SLO2_EGL19 = p[:, 156] * m_SLO2_EGL19 * h_EGL19 * (V - p[:, 181])                                                                
+    I_SLO2_UNC2 = p[:, 156] * m_SLO2_UNC2 * h_UNC2 * (V - p[:, 181])                                                                   
+    I_KCNL = p[:, 165] * m_KCNL * (V - p[:, 181])                                                                                      
+
+    I_KCa = I_SLO1_EGL19 + I_SLO1_UNC2 + I_SLO2_EGL19 + I_SLO2_UNC2 + I_KCNL
+
+    # Leak Currents
+
+    I_NCA = p[:, 179] * (V - p[:, 183])                                                                                                
+    I_LEAK = p[:, 180] * (V - p[:, 184])                                                                                               
+
+    I_L = I_NCA + I_LEAK                                                                                                               
+
+    # Calcium Concentration
+
+    I_Ca = p[:, 168] * torch.abs((V - p[:, 182])) * 1e-8 * 1e-1                                                                           
+    CA2_pos_n = I_Ca / (8 * torch.pi * p[:, 169] * p[:, 171] * p[:, 170]) * torch.exp(-p[:, 169]/torch.sqrt(p[:, 171]/(p[:, 172] * p[:, 173]))) * 1e+6         
+
+    ICC_alpha = 1 / (2 * p[:, 175] * p[:, 170])                                                                                        
+    #DCA2_pos_m_1 = (1 - torch.heaviside(V - p[:, 182], torch.tensor([0.]))) * (-(p[:, 176] * ICC_alpha * I_C * 1e-3) - ((CA2_pos_m - p[:, 178])/p[:, 177]))      
+    #DCA2_pos_m_2 = torch.heaviside(V - p[:, 182], torch.tensor([0.])) * (-(CA2_pos_m - p[:, 178])/p[:, 177])
+    DCA2_pos_m_1 = torch.zeros((len(y), 500, 11)).float().cuda() 
+    DCA2_pos_m_2 = torch.zeros((len(y), 500, 11)).float().cuda()                                                   
+
+    # Calculate differentials
+
+    SHL1_m_inf = xinf_neg((V - p[:, 1])/(p[:, 2] + eps))                                                                              
+    SHL1_tau_m = p[:, 5] / (torch.exp(-(V - p[:, 6])/(p[:, 7] + eps)) + torch.exp((V - p[:, 8])/(p[:, 9] + eps))) + p[:, 10] # 6,7,8,9                                            
+    SHL1_h_f_inf = xinf_pos((V - p[:, 3])/(p[:, 4] + eps))                                                                             
+    SHL1_h_s_inf = xinf_pos((V - p[:, 3])/(p[:, 4] + eps))                                                                             
+    SHL1_tau_h_f = p[:, 11] * xinf_pos((V - p[:, 12])/(p[:, 13] + eps)) + p[:, 14]                                                  
+    SHL1_tau_h_s = p[:, 15] * xinf_pos((V - p[:, 16])/(p[:, 17] + eps)) + p[:, 18]                                                               
+
+    KVS1_m_inf = xinf_neg((V - p[:, 32])/(p[:, 33] + eps))                                                                            
+    KVS1_h_inf = xinf_pos((V - p[:, 34])/(p[:, 35] + eps))                                                                             
+    KVS1_tau_m = p[:, 36] * xinf_pos((V - p[:, 37])/(p[:, 38] + eps)) + p[:, 39]                                                               
+    KVS1_tau_h = p[:, 40] * xinf_pos((V - p[:, 41])/(p[:, 42] + eps)) + p[:, 43]                                                               
+
+    SHK1_m_inf = xinf_neg((V - p[:, 20])/(p[:, 21] + eps))                                                                            
+    SHK1_h_inf = xinf_pos((V - p[:, 22])/(p[:, 23] + eps))                                                                             
+    SHK1_tau_m = p[:, 24] / (torch.exp(-(V - p[:, 25])/(p[:, 26] + eps)) + torch.exp((V - p[:, 27])/(p[:, 28] + eps))) + p[:, 29] # 25,26,27,28                                      
+    SHK1_tau_h = p[:, 30]                                                                                                           
+
+    KQT3_m_f_inf = xinf_neg((V - p[:, 45])/(p[:, 46] + eps))                                                                          
+    KQT3_m_s_inf = xinf_neg((V - p[:, 45])/(p[:, 46] + eps))                                                                          
+    KQT3_tau_m_f = p[:, 55] / (1 + ((V + p[:, 56]) / (p[:, 57] + eps))**2 + eps)                                                                        
+    KQT3_tau_m_s = p[:, 58] + p[:, 59] / (1 + 10**(-p[:, 60] * (p[:, 61] - V)) + eps) + p[:, 62] / (1 + 10**(-p[:, 63] * (p[:, 64] + V)) + eps)                   
+    KQT3_w_inf = p[:, 49] + p[:, 50] * xinf_pos((V - p[:, 47])/(p[:, 48] + eps))                                                                 
+    KQT3_s_inf = p[:, 53] + p[:, 54] * xinf_pos((V - p[:, 51])/(p[:, 52] + eps))                                                                 
+    KQT3_tau_w = p[:, 65] + p[:, 66] / (1 + ((V - p[:, 67]) / (p[:, 68] + eps))**2 + eps)                                                                  
+    KQT3_tau_s = p[:, 69]                                                                                                           
+
+    EGL2_m_inf = xinf_neg((V - p[:, 71])/(p[:, 72] + eps))                                                                            
+    EGL2_tau_m = p[:, 73] * xinf_pos((V - p[:, 74])/(p[:, 75] + eps)) + p[:, 76]                                                               
+
+    EGL36_m_f_inf = xinf_neg((V - p[:, 78])/(p[:, 79] + eps))                                                                         
+    EGL36_m_m_inf = xinf_neg((V - p[:, 78])/(p[:, 79] + eps))                                                                         
+    EGL36_m_s_inf = xinf_neg((V - p[:, 78])/(p[:, 79] + eps))                                                                         
+    EGL36_tau_m_f = p[:, 82]                                                                                                        
+    EGL36_tau_m_m = p[:, 81]                                                                                                        
+    EGL36_tau_m_s = p[:, 80]                                                                                                        
+
+    IRK_m_inf = xinf_pos((V - p[:, 84])/(p[:, 85] + eps))                                                                              
+    IRK_tau_m = p[:, 86] / (torch.exp(-(V - p[:, 87])/(p[:, 88] + eps)) + torch.exp((V - p[:, 89])/(p[:, 90] + eps)) + eps) + p[:, 91] # 87,88,89,90                                         
+
+    EGL19_m_inf = xinf_neg((V - p[:, 93])/(p[:, 94] + eps))                                                                           
+    EGL19_tau_m = (p[:, 103] * torch.exp(-((V - p[:, 104])/(p[:, 105] + eps))**2)) + (p[:, 106] * torch.exp(-((V - p[:, 107])/(p[:, 108] + eps))**2)) + p[:, 109] # 104, 105, 107, 108           
+    EGL19_h_inf = (p[:, 99] * xinf_neg((V - p[:, 95])/(p[:, 96] + eps)) + p[:, 100]) * (p[:, 101] * xinf_pos((V - p[:, 97])/(p[:, 98] + eps)) + p[:, 102])      
+    EGL19_tau_h = p[:, 110] * (p[:, 111] * xinf_pos((V - p[:, 112])/(p[:, 113] + eps)) + p[:, 114] * xinf_pos((V - p[:, 115])/(p[:, 116] + eps)) + p[:, 117])       
+
+    UNC2_m_inf = xinf_neg((V - p[:, 119])/(p[:, 120] + eps))                                                                          
+    UNC2_tau_m = p[:, 123] / (torch.exp(-(V - p[:, 124])/(p[:, 125] + eps)) + torch.exp((V - p[:, 124])/(p[:, 126] + eps))) + p[:, 127] # 124, 125, 126                                  
+    UNC2_h_inf = xinf_pos((V - p[:, 121])/(p[:, 122] + eps))                                                                           
+    UNC2_tau_h = p[:, 128] * xinf_neg((V - p[:, 129])/(p[:, 130] + eps)) + p[:, 131] * xinf_pos((V - p[:, 132])/(p[:, 133] + eps))                             
+
+    CCA1_m_inf = xinf_neg((V - p[:, 135])/(p[:, 136] + eps))                                                                          
+    CCA1_h_inf = xinf_pos((V - p[:, 137])/(p[:, 138] + eps))                                                                           
+    CCA1_tau_m = p[:, 139] * xinf_neg((V - p[:, 140])/(p[:, 141] + eps)) + p[:, 142]                                                               
+    CCA1_tau_h = p[:, 143] * xinf_pos((V - p[:, 144])/(p[:, 145] + eps)) + p[:, 146]                                                               
+
+    EGL19_alpha = EGL19_m_inf/(EGL19_tau_m + eps)
+    EGL19_beta = 1/(EGL19_tau_m + eps) - EGL19_alpha
+    UNC2_alpha = UNC2_m_inf/(UNC2_tau_m + eps)
+    UNC2_beta = 1/(UNC2_tau_m + eps) - UNC2_alpha
+
+    SLO1_k_neg_o = (p[:, 150] * torch.exp(-p[:, 148] * V)) * (1/(1 + (CA2_pos_n/p[:, 154])**p[:, 155]))
+    SLO1_k_neg_c = (p[:, 150] * torch.exp(-p[:, 148] * V)) * (1/(1 + (p[:, 174]/p[:, 154])**p[:, 155]))           
+    SLO1_k_pos_o = (p[:, 151] * torch.exp(-p[:, 149] * V)) * (1/(1 + (p[:, 152]/CA2_pos_n)**p[:, 153]))                   
+
+    SLO2_k_neg_o = (p[:, 159] * torch.exp(-p[:, 157] * V)) * (1/(1 + (CA2_pos_n/p[:, 163])**p[:, 164]))
+    SLO2_k_neg_c = (p[:, 159] * torch.exp(-p[:, 157] * V)) * (1/(1 + (p[:, 174]/p[:, 163])**p[:, 164]))                                        
+    SLO2_k_pos_o = (p[:, 160] * torch.exp(-p[:, 158] * V)) * (1/(1 + (p[:, 161]/CA2_pos_n)**p[:, 162]))                                         
+
+    SLO1_EGL19_m_inf = (EGL19_m_inf * SLO1_k_pos_o * (EGL19_alpha + EGL19_beta + SLO1_k_neg_c)) / (((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + EGL19_alpha) + EGL19_beta * SLO1_k_neg_c) + eps)
+    SLO1_EGL19_tau_m = (EGL19_alpha + EGL19_beta + SLO1_k_neg_c) / (((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + EGL19_alpha) + EGL19_beta * SLO1_k_neg_c) + eps)
+    SLO1_UNC2_m_inf = (UNC2_m_inf * SLO1_k_pos_o * (UNC2_alpha + UNC2_beta + SLO1_k_neg_c)) / (((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + UNC2_alpha) + UNC2_beta * SLO1_k_neg_c) + eps)
+    SLO1_UNC2_tau_m = (UNC2_alpha + UNC2_beta + SLO1_k_neg_c) / (((SLO1_k_pos_o + SLO1_k_neg_o) * (SLO1_k_neg_c + UNC2_alpha) + UNC2_beta * SLO1_k_neg_c) + eps)
+
+    SLO2_EGL19_m_inf = (EGL19_m_inf * SLO2_k_pos_o * (EGL19_alpha + EGL19_beta + SLO2_k_neg_c)) / (((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + EGL19_alpha) + EGL19_beta * SLO2_k_neg_c) + eps)
+    SLO2_EGL19_tau_m = (EGL19_alpha + EGL19_beta + SLO2_k_neg_c) / (((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + EGL19_alpha) + EGL19_beta * SLO2_k_neg_c) + eps)
+    SLO2_UNC2_m_inf = (UNC2_m_inf * SLO2_k_pos_o * (UNC2_alpha + UNC2_beta + SLO2_k_neg_c)) / (((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + UNC2_alpha) + UNC2_beta * SLO2_k_neg_c) + eps)
+    SLO2_UNC2_tau_m = (UNC2_alpha + UNC2_beta + SLO2_k_neg_c) / (((SLO2_k_pos_o + SLO2_k_neg_o) * (SLO2_k_neg_c + UNC2_alpha) + UNC2_beta * SLO2_k_neg_c) + eps)
+
+    KCNL_m_inf = CA2_pos_m / (p[:, 166] + CA2_pos_m + eps)                                                                                
+    KCNL_tau_m = p[:, 167]                                                                                                          
+
+    dV = (-(I_K + I_C + I_KCa + I_L) + iext) / p[:, 214]
+    Dm_SHL1 = (SHL1_m_inf - m_SHL1) / (SHL1_tau_m + eps)
+    Dh_SHL1_f = (SHL1_h_f_inf - h_SHL1_f) / (SHL1_tau_h_f + eps)
+    Dh_SHL1_s = (SHL1_h_s_inf - h_SHL1_s) / (SHL1_tau_h_s + eps)
+    Dm_KVS1 = (KVS1_m_inf - m_KVS1) / (KVS1_tau_m + eps)
+    Dh_KVS1 = (KVS1_h_inf - h_KVS1) / (KVS1_tau_h + eps)
+    Dm_SHK1 = (SHK1_m_inf - m_SHK1) / (SHK1_tau_m + eps)
+    Dh_SHK1 = (SHK1_h_inf - h_SHK1) / (SHK1_tau_h + eps)
+    Dm_KQT3_f = (KQT3_m_f_inf - m_KQT3_f) / (KQT3_tau_m_f + eps)
+    Dm_KQT3_s = (KQT3_m_s_inf - m_KQT3_s) / (KQT3_tau_m_s + eps)
+    Dw_KQT3 = (KQT3_w_inf - w_KQT3) / (KQT3_tau_w + eps)
+    Ds_KQT3 = (KQT3_s_inf - s_KQT3) / (KQT3_tau_s + eps)
+    Dm_EGL2 = (EGL2_m_inf - m_EGL2) / (EGL2_tau_m + eps)
+    Dm_EGL36_f = (EGL36_m_f_inf - m_EGL36_f) / (EGL36_tau_m_f + eps)
+    Dm_EGL36_m = (EGL36_m_m_inf - m_EGL36_m) / (EGL36_tau_m_m + eps)
+    Dm_EGL36_s = (EGL36_m_s_inf - m_EGL36_s) / (EGL36_tau_m_s + eps)
+    Dm_IRK = (IRK_m_inf - m_IRK) / (IRK_tau_m + eps)
+    Dm_EGL19 = (EGL19_m_inf - m_EGL19) / (EGL19_tau_m + eps)
+    Dh_EGL19 = (EGL19_h_inf - h_EGL19) / (EGL19_tau_h + eps)
+    Dm_UNC2 = (UNC2_m_inf - m_UNC2) / (UNC2_tau_m + eps)
+    Dh_UNC2 = (UNC2_h_inf - h_UNC2) / (UNC2_tau_h + eps)
+    Dm_CCA1 = (CCA1_m_inf - m_CCA1) / (CCA1_tau_m + eps)
+    Dh_CCA1 = (CCA1_h_inf - h_CCA1) / (CCA1_tau_h + eps)
+    Dm_SLO1_EGL19 = (SLO1_EGL19_m_inf - m_SLO1_EGL19) / (SLO1_EGL19_tau_m + eps)#
+    Dm_SLO1_UNC2 = (SLO1_UNC2_m_inf - m_SLO1_UNC2) / (SLO1_UNC2_tau_m + eps)#
+    Dm_SLO2_EGL19 = (SLO2_EGL19_m_inf - m_SLO2_EGL19) / (SLO2_EGL19_tau_m + eps)#
+    Dm_SLO2_UNC2 = (SLO2_UNC2_m_inf - m_SLO2_UNC2) / (SLO2_UNC2_tau_m + eps)#
+    Dm_KCNL = (KCNL_m_inf - m_KCNL) / (KCNL_tau_m + eps)
+    DCA2_pos_m = DCA2_pos_m_1 + DCA2_pos_m_2#
+
+    dV_m = torch.cat([dV, Dm_SHL1, Dh_SHL1_f, Dh_SHL1_s, Dm_KVS1, Dh_KVS1, Dm_SHK1, Dh_SHK1, Dm_KQT3_f, Dm_KQT3_s, Dw_KQT3, Ds_KQT3, Dm_EGL2,
+        Dm_EGL36_f, Dm_EGL36_m, Dm_EGL36_s, Dm_IRK, Dm_EGL19, Dh_EGL19, Dm_UNC2, Dh_UNC2, Dm_CCA1, Dh_CCA1, Dm_SLO1_EGL19, Dm_SLO1_UNC2, Dm_SLO2_EGL19, Dm_SLO2_UNC2, Dm_KCNL, DCA2_pos_m], dim = 2)
+
+    return dV_m # (128, 500, 319)

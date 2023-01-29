@@ -7,6 +7,7 @@
 ########################################################################################################################################################################
 
 import os
+import time
 import numpy as np
 import scipy.io as sio
 from imageio import imread
@@ -20,7 +21,6 @@ from dynworm import sys_paths as paths
 from dynworm import network_sim as n_sim
 from dynworm import body_params as b_params
 from IPython.display import clear_output
-import time
 from diffeqpy import de, ode 
 
 np.random.seed(10)
@@ -67,10 +67,13 @@ def validate_custom_body_params(custom_params):
 
     return all_keys_present
 
+def query_params_obj_body():
+
+    return params_obj_body
 
 ########################################################################################################################################################################
 # ANIMATION FUNCTIONS ##################################################################################################################################################
-# NEEDS REWORK #########################################################################################################################################################
+########################################################################################################################################################################
 ########################################################################################################################################################################
 ########################################################################################################################################################################
 
@@ -221,8 +224,8 @@ def produce_animation(x, y, filename, xmin, xmax, ymin, ymax, figsize_x, figsize
 
     os.chdir(paths.default_dir)
 
-def produce_animation_swarm(x_list, y_list, filename, xmin, xmax, ymin, ymax, figsize_x, figsize_y, fps = 100, interval = 10, diameter_scaler = 1.2, \
-    background_img_path = False, worm_color = 'black', facecolor = 'black', axis = 'on', \
+def produce_animation_swarm(x_list, y_list, filename, xmin, xmax, ymin, ymax, figsize_x, figsize_y, fps = 100, interval = 10, diameter_scaler = 1., \
+    background_img_path = False, worm_color = 'black', facecolor = 'white', axis = 'off', \
     text_pos_dict = False, data_dict = False, worm_dict = b_params.worm_dict_default):
 
     """ Define the video template """
@@ -338,7 +341,7 @@ def produce_animation_swarm(x_list, y_list, filename, xmin, xmax, ymin, ymax, fi
 
         """ Trail display """
 
-        if display_trail == True:
+        if worm_dict['display_trail'] == True:
 
             for swarm_count in range(len(x_list)):
 
@@ -450,8 +453,8 @@ def solve_bodymodel(result_dict_network, xinit = 0, yinit = 0, orientation_angle
 
         print("Computing body movements using Julia engine...")
 
-        r = de.ODEProblem(visco_elastic_rod_rhs_julia, InitCond, (0, tf))
-        sol = de.solve(r, ode.BS5(), saveat = params_obj_body['dt'], reltol = 10e-5, abstol = 10e-5, save_everystep = False)
+        r = de.ODEProblem(visco_elastic_rod_rhs_julia, InitCond, (0, tf), query_params_obj_body)
+        sol = de.solve(r, ode.DP5(), saveat = params_obj_body['dt'], save_everystep = False)
 
         t = sol.t
         Traj = np.vstack(sol.u)
@@ -498,7 +501,7 @@ def solve_bodymodel(result_dict_network, xinit = 0, yinit = 0, orientation_angle
     x_post, y_post = postprocess_xy(x, y)
 
     print("Rendering simulated body movements...")
-    fig = plt.figure(figsize=(17,17))
+    fig = plt.figure(figsize=(15,15))
 
     plt.plot(x_post[:, 0], y_post[:, 0],  linewidth = 5, color = 'black')
     plt.xlim(xmin, xmax)
@@ -516,7 +519,7 @@ def solve_bodymodel(result_dict_network, xinit = 0, yinit = 0, orientation_angle
     return result_dict_body
 
 ########################################################################################################################################################################
-# SIMULATION SPECIFIC ENVIRONMENT FUNCTIONS ############################################################################################################################
+# PRE-SIMULATION FUNCTIONS #############################################################################################################################################
 ########################################################################################################################################################################
 ########################################################################################################################################################################
 ########################################################################################################################################################################
@@ -535,7 +538,7 @@ def neuron_voltages_2_muscles(result_dict_network, custom_force = False, use_sim
         else:
 
             calcium_dynamics = muscle_activity_2_calcium(stacked_force)
-            force_dynamics = np.divide(np.power(15 * calcium_dynamics, 2), 1 + np.power(15 * calcium_dynamics, 2))
+            force_dynamics = np.divide(np.power(1 * calcium_dynamics, 2), 1 + np.power(1 * calcium_dynamics, 2))
             force_dynamics = params_obj_body['scaled_factor'] * force_dynamics
 
     else:
@@ -758,7 +761,7 @@ def compute_kappa():
     return k
 
 ########################################################################################################################################################################
-# POST-SIMULATION FUNCTIONS: SOLVE XY COORDINATES FOR ALL BODY SEGMENTS AND SMOOTHING MOVEMENTS ########################################################################
+# POST-SIMULATION FUNCTIONS ############################################################################################################################################
 ########################################################################################################################################################################
 ########################################################################################################################################################################
 ########################################################################################################################################################################
@@ -845,7 +848,7 @@ def postprocess_xy(x, y):
     return expanded_x_smoothed, expanded_y_smoothed
 
 ########################################################################################################################################################################
-# RIGHT-HAND SIDE FUNCTION FOR VISCOELASTIC ROD MODEL ##################################################################################################################
+# RIGHT-HAND SIDE FUNCTIONS ############################################################################################################################################
 ########################################################################################################################################################################
 ########################################################################################################################################################################
 ########################################################################################################################################################################
@@ -1014,6 +1017,8 @@ def visco_elastic_rod_rhs(t, y):
 
 def visco_elastic_rod_rhs_julia(dy, y, p, t):
 
+    p = p()
+
     """ Unpack y """
 
     xyphi, xyphi_dot = np.split(y, 2)
@@ -1028,10 +1033,10 @@ def visco_elastic_rod_rhs_julia(dy, y, p, t):
 
     """ Empty arrays for x, y, x_dot, ydot """
 
-    xvec = np.zeros(params_obj_body['segments_count'])
-    yvec = np.zeros(params_obj_body['segments_count'])
-    xdot = np.zeros(params_obj_body['segments_count'])
-    ydot = np.zeros(params_obj_body['segments_count'])
+    xvec = np.zeros(p['segments_count'])
+    yvec = np.zeros(p['segments_count'])
+    xdot = np.zeros(p['segments_count'])
+    ydot = np.zeros(p['segments_count'])
 
     """ Populate x, y, x_dot, y_dot """
 
@@ -1044,20 +1049,20 @@ def visco_elastic_rod_rhs_julia(dy, y, p, t):
 
         j_ = j - 1
 
-        xvec[j] = xvec[j_] + (params_obj_body['h'][j] / 2.) * (np.cos(phi[j_]) + np.cos(phi[j]))
-        yvec[j] = yvec[j_] + (params_obj_body['h'][j] / 2.) * (np.sin(phi[j_]) + np.sin(phi[j]))
-        xdot[j] = xdot[j_] - (params_obj_body['h'][j] / 2.) * (np.sin(phi[j_]) * phidot[j_] + np.sin(phi[j]) * phidot[j])
-        ydot[j] = ydot[j_] + (params_obj_body['h'][j] / 2.) * (np.cos(phi[j_]) * phidot[j_] + np.cos(phi[j]) * phidot[j])
+        xvec[j] = xvec[j_] + (p['h'][j] / 2.) * (np.cos(phi[j_]) + np.cos(phi[j]))
+        yvec[j] = yvec[j_] + (p['h'][j] / 2.) * (np.sin(phi[j_]) + np.sin(phi[j]))
+        xdot[j] = xdot[j_] - (p['h'][j] / 2.) * (np.sin(phi[j_]) * phidot[j_] + np.sin(phi[j]) * phidot[j])
+        ydot[j] = ydot[j_] + (p['h'][j] / 2.) * (np.cos(phi[j_]) * phidot[j_] + np.cos(phi[j]) * phidot[j])
 
     """ Mapping t -> Left and right forces, or Ventral and dorsal forces """
     """ rounding to integer method"""
 
-    t_int = np.max([1, int(np.round(t / params_obj_body['dt']))])
+    t_int = np.max([1, int(np.round(t / p['dt']))])
 
     """ interpoloate method """
 
-    fR = params_obj_body['interpolate_force'](t)[:params_obj_body['segments_count']-1]
-    fL = params_obj_body['interpolate_force'](t)[params_obj_body['segments_count']:-1]
+    fR = p['interpolate_force'](t)[:p['segments_count']-1]
+    fL = p['interpolate_force'](t)[p['segments_count']:-1]
 
     """ Computing velocity of local body movement """
 
@@ -1065,18 +1070,18 @@ def visco_elastic_rod_rhs_julia(dy, y, p, t):
     v_tan_norm_1 = np.multiply(-1 * np.sin(phi), xdot) + np.multiply(np.cos(phi), ydot)
 
     v_tan_norm = np.concatenate([v_tan_norm_0, v_tan_norm_1])
-    v_tan = v_tan_norm[:params_obj_body['segments_count']]
-    v_norm = v_tan_norm[params_obj_body['segments_count']:]
+    v_tan = v_tan_norm[:p['segments_count']]
+    v_norm = v_tan_norm[p['segments_count']:]
 
     """ Compute curvature k """
 
-    k = np.divide(4 * (fR - fL) * params_obj_body['w'][:-1], np.subtract(8 * params_obj_body['v'][:-1] * params_obj_body['w'][:-1]**2, np.multiply(fR + fL, np.power(params_obj_body['h'][:-1], 2))))
+    k = np.divide(4 * (fR - fL) * p['w'][:-1], np.subtract(8 * p['v'][:-1] * p['w'][:-1]**2, np.multiply(fR + fL, np.power(p['h'][:-1], 2))))
 
     """ curvature scaling """
-    k = np.multiply(k, params_obj_body['kappa_scaling'])
-    k = k + params_obj_body['kappa_forcing']
+    k = np.multiply(k, p['kappa_scaling'])
+    k = k + p['kappa_forcing']
 
-    params_obj_body['kappa'][t_int, :] = k
+    p['kappa'][t_int, :] = k
 
     """ Phi_diff and phidot_diff """
 
@@ -1085,14 +1090,14 @@ def visco_elastic_rod_rhs_julia(dy, y, p, t):
 
     """ Contact moment """
 
-    M = np.zeros(params_obj_body['segments_count'])
-    M[:-1] = params_obj_body['EI'][:-1] * (phi_diff - k) + (2 * params_obj_body['b'][:-1]**2 * params_obj_body['damping']) * np.divide(phi_dot_diff, params_obj_body['h'][:-1])
+    M = np.zeros(p['segments_count'])
+    M[:-1] = p['EI'][:-1] * (phi_diff - k) + (2 * p['b'][:-1]**2 * p['damping']) * np.divide(phi_dot_diff, p['h'][:-1])
     Mdiff = np.append(M[0], np.diff(M))
 
     """ Second derivative computation """
 
-    Hh_mat = np.diag(params_obj_body['h']) + np.diag(params_obj_body['h'][1:], 1)
-    Gh_mat = np.diag(params_obj_body['h']) + np.diag(params_obj_body['h'][1:], -1)
+    Hh_mat = np.diag(p['h']) + np.diag(p['h'][1:], 1)
+    Gh_mat = np.diag(p['h']) + np.diag(p['h'][1:], -1)
     Gcos = np.multiply(Gh_mat / 2., Gmat(np.cos(phi)))
     Gsin = np.multiply(Gh_mat / 2., Gmat(np.sin(phi)))
     Hcos = np.multiply(Hh_mat / 2., Hmat(np.cos(phi)))
@@ -1100,56 +1105,56 @@ def visco_elastic_rod_rhs_julia(dy, y, p, t):
 
     """ Normal force """
 
-    F_N0 = np.multiply(params_obj_body['a'] * params_obj_body['rho_f'] * params_obj_body['C_N'] * np.abs(v_norm), v_norm)
-    F_N1 = np.multiply(np.sqrt(8 * params_obj_body['rho_f'] * params_obj_body['a'] * params_obj_body['mu'] * np.abs(v_norm)), v_norm)
+    F_N0 = np.multiply(p['a'] * p['rho_f'] * p['C_N'] * np.abs(v_norm), v_norm)
+    F_N1 = np.multiply(np.sqrt(8 * p['rho_f'] * p['a'] * p['mu'] * np.abs(v_norm)), v_norm)
     F_N = np.add(F_N0, F_N1)
 
     """ Tan force """
 
-    F_T = np.multiply(2.7 * np.sqrt(2 * params_obj_body['rho_f'] * params_obj_body['a'] * params_obj_body['mu'] * np.abs(v_norm)), v_tan)
+    F_T = np.multiply(2.7 * np.sqrt(2 * p['rho_f'] * p['a'] * p['mu'] * np.abs(v_norm)), v_tan)
 
     """ W computation """
 
     W0 = np.multiply(-1 * F_T, np.cos(phi)) + np.multiply(F_N, np.sin(phi))
     W1 = np.multiply(-1 * F_T, np.sin(phi)) - np.multiply(F_N, np.cos(phi))
     W = np.concatenate([W0, W1])
-    Wx = W[:params_obj_body['segments_count']]
-    Wy = W[params_obj_body['segments_count']:]
+    Wx = W[:p['segments_count']]
+    Wy = W[p['segments_count']:]
 
     """ W_diff computation """
 
-    Wx_diff0 = np.multiply(np.divide(params_obj_body['h'][:-1], params_obj_body['mp'][:-1]), Wx[:-1])
-    WX_diff1 = np.multiply(np.divide(params_obj_body['h'][1:], params_obj_body['mp'][1:]), Wx[1:])
+    Wx_diff0 = np.multiply(np.divide(p['h'][:-1], p['mp'][:-1]), Wx[:-1])
+    WX_diff1 = np.multiply(np.divide(p['h'][1:], p['mp'][1:]), Wx[1:])
     Wx_diff = np.subtract(Wx_diff0, WX_diff1)
     Wx_diff = np.append(Wx_diff, 0)
 
-    Wy_diff0 = np.multiply(np.divide(params_obj_body['h'][:-1], params_obj_body['mp'][:-1]), Wy[:-1])
-    Wy_diff1 = np.multiply(np.divide(params_obj_body['h'][1:], params_obj_body['mp'][1:]), Wy[1:])
+    Wy_diff0 = np.multiply(np.divide(p['h'][:-1], p['mp'][:-1]), Wy[:-1])
+    Wy_diff1 = np.multiply(np.divide(p['h'][1:], p['mp'][1:]), Wy[1:])
     Wy_diff = np.subtract(Wy_diff0, Wy_diff1)
     Wy_diff = np.append(Wy_diff, 0)
 
     """ Second derivative of Phi """
 
-    phi_ddot_numerator0 = np.dot(np.dot(np.dot(-Gcos, params_obj_body['A_plus']), Hsin) + np.dot(np.dot(Gsin, params_obj_body['A_plus']), Hcos), np.power(phidot, 2))
-    phi_ddot_numerator1 = Mdiff + np.dot(np.dot(Gcos, params_obj_body['A_plus']), Wy_diff) - np.dot(np.dot(Gsin, params_obj_body['A_plus']), Wx_diff)
+    phi_ddot_numerator0 = np.dot(np.dot(np.dot(-Gcos, p['A_plus']), Hsin) + np.dot(np.dot(Gsin, p['A_plus']), Hcos), np.power(phidot, 2))
+    phi_ddot_numerator1 = Mdiff + np.dot(np.dot(Gcos, p['A_plus']), Wy_diff) - np.dot(np.dot(Gsin, p['A_plus']), Wx_diff)
     phi_ddot_numerator = np.add(phi_ddot_numerator0, phi_ddot_numerator1)
 
-    phi_ddot_denominator = params_obj_body['J'] - np.dot(np.dot(Gcos, params_obj_body['A_plus']), Hcos) - np.dot(np.dot(Gsin, params_obj_body['A_plus']), Hsin)
+    phi_ddot_denominator = p['J'] - np.dot(np.dot(Gcos, p['A_plus']), Hcos) - np.dot(np.dot(Gsin, p['A_plus']), Hsin)
     phi_ddot = np.linalg.solve(phi_ddot_denominator, phi_ddot_numerator)
 
     """ Second derivative of x and y """
 
-    C_ddot = np.zeros(params_obj_body['segments_count'])
+    C_ddot = np.zeros(p['segments_count'])
     cs1 = np.cos(phi[0]) * phidot[0]**2 + np.sin(phi[0]) * phi_ddot[0]
     cs2 = np.cos(phi[1]) * phidot[1]**2 + np.sin(phi[1]) * phi_ddot[1]
-    C_ddot[1] = -params_obj_body['h'][1] / 2. * (cs1 + cs2)
+    C_ddot[1] = -p['h'][1] / 2. * (cs1 + cs2)
 
-    S_ddot = np.zeros(params_obj_body['segments_count'])
+    S_ddot = np.zeros(p['segments_count'])
     sc1 = np.sin(phi[0]) * phidot[0]**2 - np.cos(phi[0]) * phi_ddot[0]
     sc2 = np.sin(phi[1]) * phidot[1]**2 - np.cos(phi[1]) * phi_ddot[1]
-    S_ddot[1] = -params_obj_body['h'][1] / 2. * (sc1 + sc2)
+    S_ddot[1] = -p['h'][1] / 2. * (sc1 + sc2)
 
-    for j in range(2, params_obj_body['segments_count']):
+    for j in range(2, p['segments_count']):
 
         cs_i = np.cos(phi[j]) * phidot[j]**2 + np.sin(phi[j]) * phi_ddot[j]
         cs_im1 = np.cos(phi[j-1]) * phidot[j-1]**2 + np.sin(phi[j-1]) * phi_ddot[j-1]
@@ -1157,13 +1162,13 @@ def visco_elastic_rod_rhs_julia(dy, y, p, t):
         sc_i = np.sin(phi[j]) * phidot[j]**2 - np.cos(phi[j]) * phi_ddot[j]
         sc_im1 = np.sin(phi[j-1]) * phidot[j-1]**2 - np.cos(phi[j-1]) * phi_ddot[j-1]
 
-        C_ddot[j] = C_ddot[j-1] - params_obj_body['h'][j] / 2. * cs_im1 - params_obj_body['h'][j] / 2. * cs_i
-        S_ddot[j] = S_ddot[j-1] - params_obj_body['h'][j] / 2. * sc_im1 - params_obj_body['h'][j] / 2. * sc_i
+        C_ddot[j] = C_ddot[j-1] - p['h'][j] / 2. * cs_im1 - p['h'][j] / 2. * cs_i
+        S_ddot[j] = S_ddot[j-1] - p['h'][j] / 2. * sc_im1 - p['h'][j] / 2. * sc_i
 
-    m_sum = np.sum(params_obj_body['mp'])
+    m_sum = np.sum(p['mp'])
 
-    x_ddot_1 = np.reciprocal(m_sum) * np.sum(np.multiply(params_obj_body['h'], Wx) - np.multiply(params_obj_body['mp'], C_ddot))
-    y_ddot_1 = np.reciprocal(m_sum) * np.sum(np.multiply(params_obj_body['h'], Wy) - np.multiply(params_obj_body['mp'], S_ddot))
+    x_ddot_1 = np.reciprocal(m_sum) * np.sum(np.multiply(p['h'], Wx) - np.multiply(p['mp'], C_ddot))
+    y_ddot_1 = np.reciprocal(m_sum) * np.sum(np.multiply(p['h'], Wy) - np.multiply(p['mp'], S_ddot))
 
     output_dot = np.asarray([xdot[0], ydot[0]])
     output_dot = np.concatenate([output_dot, phidot])

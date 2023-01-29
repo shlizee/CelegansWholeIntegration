@@ -15,7 +15,7 @@ import numpy as np
 
 from dynworm import sys_paths as path
 
-def plot_Colormap(result_dict, sub_neurons = 'all', vmin = -50, vmax = 50, cmap = 'seismic', figsize_w = 15, figsize_h = 10):
+def plot_colormap(result_dict, sub_neurons = 'all', vmin = -50, vmax = 50, cmap = 'seismic', figsize_w = 15, figsize_h = 10):
 
     nsteps = result_dict['steps']
     VsubVth = result_dict['v_solution'].transpose()
@@ -42,7 +42,7 @@ def plot_Colormap(result_dict, sub_neurons = 'all', vmin = -50, vmax = 50, cmap 
     #plt.title('Voltage Dynamics: Motor Neurons', fontsize = 25)
     #plt.savefig('CElegansMotor')
 
-def plot_DominantModes(result_dict, sub_neurons):
+def plot_dominant_modes(result_dict, sub_neurons):
 
     t = result_dict['t']
     nsteps = result_dict['steps']
@@ -87,7 +87,7 @@ def plot_DominantModes(result_dict, sub_neurons):
     plt.title('Phase Space of Two Modes (weighted)', fontsize = 20)
     plt.show
 
-def plot_Neurons_Voltage(result_dict, neurons_list, index_Array, return_only_solution = False):
+def plot_neurons_voltage(result_dict, neurons_list, index_Array, return_only_solution = False):
 
     t = result_dict['t']
     nsteps = result_dict['steps']
@@ -123,7 +123,7 @@ def plot_Neurons_Voltage(result_dict, neurons_list, index_Array, return_only_sol
 
         return target_Neurons
 
-def project_Modes(p1, p2, result_dict, neurons_list, neurons_group):
+def project_modes(p1, p2, result_dict, neurons_list, neurons_group):
 
     t = result_dict['t']
     nsteps = result_dict['steps']
