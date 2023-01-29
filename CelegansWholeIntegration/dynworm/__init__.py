@@ -59,6 +59,6 @@ from dynworm import body_params # Contains body/surrounding liquid parameters us
 from dynworm import neurons_idx # Set of pre-defined indices for different neuron groups 
 from dynworm import network_sim # Handles neural simulations
 from dynworm import body_sim # Handles body simulations
-from dynworm import spatialgrad_sim # Real time simulations of environmental interactions. This code is confidential for now.
+#from dynworm import spatialgrad_sim # Real time simulations of environmental interactions. This code is confidential for now.
 from dynworm import plotting # Suite of plotting functions
 from dynworm import utils # Suite of various utility functions
