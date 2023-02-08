@@ -14,6 +14,8 @@ Emulating zf-35 mutant by increasing gains into AVA, AVD, AVE (backward neurons)
 
 <iframe src="https://drive.google.com/file/d/1qNcRgfUkXMQYn_hWGBxUG8iZgdRJcJK4/preview" width="720" height="405" allow="autoplay"></iframe>
 
+(First 10 seconds of worm locomotion for all ZF-35 scenarios)
+
 The three methods we considered are implemented as follows: for increased gains to backward neurons, we use a gain of 1275 pA into AVA, AVD, AVE interneurons; for increased gains to both backward and forward neurons, we use a gain of 600 pA into AVA, AVD, AVE, PVC, RIM, AVB interneurons; for increased gains to all excitatory neurons, we use a gain of 6 pA into all glutamergic and cholinergic neurons. The gain amplitudes are chosen to induce spontaneous reversals and pauses during locomotion behavior similar to those in-vivo zf-35.
 
 From Figure 1, we noticed all three methods have impacts on locomotion but increasing gains to all excitatory neurons significantly decreased the mean velocity while increasing the frequency of reversals. In particular, the frequency of reversals increased by a factor of x6 which is similar to the factor measured during in-vivo experiments [1]. It is also worth noting that increasing gains to backward and forward neurons aren’t sufficient to produce similar behavioral effects - while they produced spontaneous reversals during the first few seconds, the worm quickly restored the velocity and rate of reversals similar to those of wild-type variant.
