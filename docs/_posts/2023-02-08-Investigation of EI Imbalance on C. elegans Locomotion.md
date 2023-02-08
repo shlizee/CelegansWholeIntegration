@@ -22,7 +22,7 @@ We also found that each scenario had a gain threshold where any higher gain woul
 
 In summary, our studies showcase a systematic method for C. elegans model to reproduce EI imbalance exhibited by zf-35 mutant. To emulate such a mutant, we increase stimulus gains to backward, forward, and all excitatory neurons. In particular, increasing gains to all excitatory neurons of glutamergic and cholinergic type causes the worm to exhibit abnormal locomotion behavior with increased frequency of reversals similar to in-vivo experiments. As our investigation was limited to broad neuron groups, however, further extensions of the method aiming to delineate the exact neurons/synapses with excitatory gains will allow us to reproduce behaviors associated with EI imbalance closer to in-vivo, 
 
-References
+**References**
 
 [1] Yung-Chi Huang, Jennifer K Pirri, Diego Rayes, Shangbang Gao, Ben Mulcahy, Jeff Grant, Yasunori Saheki, Michael M Francis, Mei Zhen, Mark J Alkema (2019) Gain-of-function mutations in the UNC-2/CaV2α channel lead to excitation-dominant synaptic transmission in Caenorhabditis elegans eLife 8:e45905
 
