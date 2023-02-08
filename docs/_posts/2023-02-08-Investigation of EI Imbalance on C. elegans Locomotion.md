@@ -11,7 +11,7 @@ Emulating zf-35 mutant by increasing gains into AVA, AVD, AVE (backward neurons)
 
 <!--more-->
 
-<iframe width="1320" height="330" src="https://drive.google.com/file/d/1qNcRgfUkXMQYn_hWGBxUG8iZgdRJcJK4/view?usp=share_link" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe src="https://drive.google.com/file/d/1qNcRgfUkXMQYn_hWGBxUG8iZgdRJcJK4/preview" width="640" height="480" allow="autoplay"></iframe>
 
 The three methods we considered are implemented as follows: for increased gains to backward neurons, we use a gain of 1275 pA into AVA, AVD, AVE interneurons; for increased gains to both backward and forward neurons, we use a gain of 600 pA into AVA, AVD, AVE, PVC, RIM, AVB interneurons; for increased gains to all excitatory neurons, we use a gain of 6 pA into all glutamergic and cholinergic neurons. The gain amplitudes are chosen to induce spontaneous reversals and pauses during locomotion behavior similar to those in-vivo zf-35.
 
