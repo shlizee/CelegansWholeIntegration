@@ -7,7 +7,7 @@ title: Investigation of EI Imbalance on C. elegans Locomotion
 A balance between excitatory and inhibitory signaling (EI balance) in the brain is essential for maintaining normal brain function in animals including C. elegans. Proper EI balance allows for the C. elegans to have normal locomotion. C. elegans mutants, namely zf-35, express excessive excitatory signals, causing the worm to exhibit seizures and spontaneous backward pauses and reversals during locomotion [1]. To further investigate the link between EI imbalance and its associated behavioral effects on C. elegans, we use the C. elegans Whole Integration model to reproduce the zf-35 mutant using 3 methods: increased gains to backwards, backwards and forwards, and all excitatory neurons.
 
 ![zf-35 simulations](/CelegansWholeIntegration/media/EI_Imbalance.png)
-Figure 1: Emulating zf-35 mutant by increasing gains into AVA, AVD, AVE (backward neurons), AVA, AVD, AVE, PVC, RIM, AVB (backward + forward neurons) and all excitatory neurons. A: Instantaneous velocities (wormlength/s) of worm in 90 seconds; B: Mean velocity and number of reversals in 90 seconds.
+Emulating zf-35 mutant by increasing gains into AVA, AVD, AVE (backward neurons), AVA, AVD, AVE, PVC, RIM, AVB (backward + forward neurons) and all excitatory neurons. A: Instantaneous velocities (wormlength/s) of worm in 90 seconds; B: Mean velocity and number of reversals in 90 seconds.
 
 <!--more-->
 
