@@ -12,7 +12,7 @@ Emulating zf-35 mutant by increasing gains into AVA, AVD, AVE (backward neurons)
 
 <!--more-->
 
-<iframe src="https://drive.google.com/file/d/1qNcRgfUkXMQYn_hWGBxUG8iZgdRJcJK4/preview" width="720" height="405" allow="autoplay; fullscreen"></iframe>
+<iframe src="https://drive.google.com/file/d/16G2rPG6UUk-z_G4KmuuVAcXhpPB44-Bm/preview" width="720" height="405" allow="autoplay; fullscreen"></iframe>
 
 (First 10 seconds of worm locomotion for all ZF-35 scenarios)
 
