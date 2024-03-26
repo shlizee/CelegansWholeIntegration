@@ -11,6 +11,6 @@ Also contact us with additional scenarios to explore, we would love to get sugge
 
 Please note that the package requires diffeqpy package and Julia to be installed on your computer for efficient simulation. Please visit https://github.com/SciML/diffeqpy for detailed instruction on installation.
 
-We will soon release a version which doesn't require diffeqpy/Julia.
+If you are using this model for your research paper, please cite the original paper https://www.biorxiv.org/content/10.1101/724328v1.full
 
 
